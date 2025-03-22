@@ -15,15 +15,26 @@ local ColorHelperScreen = Class(Screen, function(self, title, buttons, initial_c
 	self.root:SetVAnchor(0)
 	self.root:SetHAnchor(0)
 
-	self.dialog = self.root:AddChild(TEMPLATES.CurlyWindow(600,450, title, buttons, nil, "Hello! This is a color demo!\nChange the RGB(A) values below and find your perfect color!\n\n██████████"))
-	local text = self.dialog.body
-	text:SetPosition(0,140)
-	text:SetFont(TALKINGFONT)
-	text:SetSize(30)
+	self.dialog = self.root:AddChild(TEMPLATES.CurlyWindow(400,450, title, buttons))
+
 	initial_color = type(initial_color) == "table" and initial_color or {1,1,1,1}
 	for i = 1,4 do initial_color[i] = initial_color[i] or 1 end
-	text.ep_current_color = initial_color
-	text:SetColour(unpack(initial_color))
+
+	local newcolor = self.root:AddChild(Image("images/global.xml", "square.tex"))
+	newcolor:SetPosition(100,140)
+	newcolor:ScaleToSize(200,100)
+	newcolor:SetTint(unpack(initial_color))
+	newcolor.ep_current_color = initial_color
+	self.newcolor = newcolor
+	self.newcolor_lbl = self.root:AddChild(Text(CHATFONT, 25, "New:"))
+	self.newcolor_lbl:SetPosition(100,210)
+	local oldcolor = self.root:AddChild(Image("images/global.xml", "square.tex"))
+	oldcolor:SetPosition(-100,140)
+	oldcolor:ScaleToSize(200,100)
+	oldcolor:SetTint(unpack(initial_color))
+	self.oldcolor = oldcolor
+	self.oldcolor_lbl = self.root:AddChild(Text(CHATFONT, 25, "Old:"))
+	self.oldcolor_lbl:SetPosition(-100,210)
 
 	self.colorlabels = {}
 	self.colorpickers = {}
@@ -62,16 +73,16 @@ local ColorHelperScreen = Class(Screen, function(self, title, buttons, initial_c
 				colorpicker:SetString("1")
 			end
 			colorpicker.actualvalue = val
-			text.ep_current_color[i] = val
-			text:SetColour(unpack(text.ep_current_color))
+			newcolor.ep_current_color[i] = val
+			newcolor:SetTint(unpack(newcolor.ep_current_color))
 		end
 		local oldfn = colorpicker.OnControl
 		colorpicker.OnControl = function(self, control, down)
 			if not down and (control == CONTROL_SCROLLFWD or control == CONTROL_SCROLLBACK) then
 				self.actualvalue = math.clamp(self.actualvalue + (control == CONTROL_SCROLLFWD and -.02 or .02), 0, 1)
 				self:SetString(tostring(self.actualvalue))
-				text.ep_current_color[i] = self.actualvalue
-				text:SetColour(unpack(text.ep_current_color))
+				newcolor.ep_current_color[i] = self.actualvalue
+				newcolor:SetTint(unpack(newcolor.ep_current_color))
 				return true
 			end
 			return oldfn and oldfn(self, control, down)
@@ -89,7 +100,7 @@ local ColorHelperScreen = Class(Screen, function(self, title, buttons, initial_c
 end)
 
 function ColorHelperScreen:GetCurrentColor()
-	return self.dialog.body.ep_current_color
+	return self.newcolor.ep_current_color
 end
 
 return ColorHelperScreen
