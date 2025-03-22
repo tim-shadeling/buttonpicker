@@ -1,7 +1,7 @@
 name = "Convenient Configs"
 description = "Imagine scrolling through 40 different options just to set a single keybind."
 author = "Remi"
-version = "0.4.1"
+version = "0.4.2"
 
 forumthread = ""
 

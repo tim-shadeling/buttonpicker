@@ -17,6 +17,7 @@ local ColorHelperScreen = Class(Screen, function(self, title, buttons, initial_c
 
 	self.dialog = self.root:AddChild(TEMPLATES.CurlyWindow(400,450, title, buttons))
 
+	initial_color = shallowcopy(initial_color)
 	initial_color = type(initial_color) == "table" and initial_color or {1,1,1,1}
 	for i = 1,4 do initial_color[i] = initial_color[i] or 1 end
 
@@ -81,6 +82,7 @@ local ColorHelperScreen = Class(Screen, function(self, title, buttons, initial_c
 			if not down and (control == CONTROL_SCROLLFWD or control == CONTROL_SCROLLBACK) then
 				self.actualvalue = math.clamp(self.actualvalue + (control == CONTROL_SCROLLFWD and -.02 or .02), 0, 1)
 				self:SetString(tostring(self.actualvalue))
+				self.actualvalue = tonumber(self.actualvalue) or self.actualvalue
 				newcolor.ep_current_color[i] = self.actualvalue
 				newcolor:SetTint(unpack(newcolor.ep_current_color))
 				return true
@@ -101,6 +103,20 @@ end)
 
 function ColorHelperScreen:GetCurrentColor()
 	return self.newcolor.ep_current_color
+end
+
+local oldfn = ColorHelperScreen.OnControl
+function ColorHelperScreen:OnControl(control, down)
+	if not down and control == CONTROL_CANCEL then
+		for k,v in pairs(self.colorpickers) do
+			if v.editing then
+				return v:OnControl(control, down)
+			end
+		end
+		TheFrontEnd:PopScreen()
+		return true
+	end
+	return oldfn(self, control, down)
 end
 
 return ColorHelperScreen

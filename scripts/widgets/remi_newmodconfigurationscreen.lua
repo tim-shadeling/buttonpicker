@@ -424,7 +424,7 @@ end
 
 function NewModConfigurationScreen:OnInputSet(option, option_button, input)
 	option.value = input
-	TheFrontEnd:GetSound():PlaySound("meta4/winona_remote/click", nil, .15)
+	TheFrontEnd:GetSound():PlaySound("meta4/winona_remote/click", nil, .3)
 	self:MakeDirty()
 	option_button:UpdateAppearance()
 	option_button:ApplyDescription()
