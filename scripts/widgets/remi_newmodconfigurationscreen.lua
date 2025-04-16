@@ -19,10 +19,14 @@ end
 
 local function custom_not_equal(a,b)
 	if type(a) ~= type(b) then return true end
-	if type(a) == "table" then -- COLOR TABLE {R, G, B, A}
-		for i = 1,4 do
-			if math.abs(a[i] - b[i]) >= 0.001 then
-				return true
+	if type(a) == "table" then
+		for k in pairs(a) do
+			if type(a[k]) == "number" and type(b[k]) == "number" then
+				if math.abs(a[k] - b[k]) >= 0.001 then
+					return true
+				end
+			else
+				if a[k] ~= b[k] then return true end
 			end
 		end
 		return false
