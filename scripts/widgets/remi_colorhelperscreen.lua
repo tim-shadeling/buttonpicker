@@ -7,8 +7,8 @@ local TextEdit = require "widgets/textedit"
 
 local COLOR_NAMES = {"Red:", "Green:", "Blue:", "Alpha:"}
 
-local ColorHelperScreen = Class(Screen, function(self, title, buttons, initial_color, include_alpha)
-	Screen._ctor(self, "ColorHelperScreen")
+local RemiColorHelperScreen = Class(Screen, function(self, title, buttons, initial_color, include_alpha)
+	Screen._ctor(self, "RemiColorHelperScreen")
 	self.tint = self:AddChild(TEMPLATES.BackgroundTint())
 	
 	self.root = self:AddChild(Widget("root"))
@@ -70,8 +70,8 @@ local ColorHelperScreen = Class(Screen, function(self, title, buttons, initial_c
 			if val then label:SetColour(1,1,1,1) else label:SetColour(1,0,0,1) end
 			val = val or 0
 			if val > 1 then
-				val = 1
-				colorpicker:SetString("1")
+				while val > 1 do val = val/10 end
+				colorpicker:SetString(tostring(val))
 			end
 			colorpicker.actualvalue = val
 			newcolor.ep_current_color[i] = val
@@ -101,12 +101,12 @@ local ColorHelperScreen = Class(Screen, function(self, title, buttons, initial_c
 	self.root:SetScale(w/RESOLUTION_X, h/RESOLUTION_Y)
 end)
 
-function ColorHelperScreen:GetCurrentColor()
+function RemiColorHelperScreen:GetCurrentColor()
 	return self.newcolor.ep_current_color
 end
 
-local oldfn = ColorHelperScreen.OnControl
-function ColorHelperScreen:OnControl(control, down)
+local oldfn = RemiColorHelperScreen.OnControl
+function RemiColorHelperScreen:OnControl(control, down)
 	if not down and control == CONTROL_CANCEL then
 		for k,v in pairs(self.colorpickers) do
 			if v.editing then
@@ -119,4 +119,4 @@ function ColorHelperScreen:OnControl(control, down)
 	return oldfn(self, control, down)
 end
 
-return ColorHelperScreen
+return RemiColorHelperScreen

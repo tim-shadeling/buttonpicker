@@ -1,14 +1,15 @@
--- Basically the usual mod config screen but with some minor changes.
 require "util"
 require "strings"
 local Image = require "widgets/image"
 local Screen = require "widgets/screen"
 local Text = require "widgets/text"
+local TextEdit = require "widgets/textedit"
 local Widget = require "widgets/widget"
 local TEMPLATES = require "widgets/redux/templates"
 local ImageButton = require "widgets/imagebutton"
 local PopupDialogScreen = require "screens/redux/popupdialog"
-local TextListPopup = require "screens/redux/textlistpopup"
+local ListOptionScreen = require "widgets/remi_listoptionscreen"
+local ListChoiceScreen = require "widgets/remi_listchoicescreen"
 local InputDialogScreen = require "screens/redux/inputdialog"
 local ManualSupport = require "remi_manualsupport"
 local ColorHelperScreen = require "widgets/remi_colorhelperscreen"
@@ -20,6 +21,8 @@ end
 local function custom_not_equal(a,b)
 	if type(a) ~= type(b) then return true end
 	if type(a) == "table" then
+		if table.count(a) ~= table.count(b) then return true end
+		--
 		for k in pairs(a) do
 			if type(a[k]) == "number" and type(b[k]) == "number" then
 				if math.abs(a[k] - b[k]) >= 0.001 then
@@ -35,13 +38,17 @@ local function custom_not_equal(a,b)
 	end
 end
 
+local function custom_equal(a,b)
+	return not custom_not_equal(a,b) -- wow
+end
+
 local chinese = LanguageTranslator.defaultlang or "en"
 chinese = chinese == "zh" or chinese == "zht"
-
 local VALUESTR = chinese and "选项值" or "Value:" 
+local PRESS_A_BUTTON_STRING = chinese and "从下面的列表中按一个按钮！" or "Press a button from the list below!"
 
-local NewModConfigurationScreen = Class(Screen, function(self, modname, client_config)
-	Screen._ctor(self, "NewModConfigurationScreen")
+local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, client_config)
+	Screen._ctor(self, "RemiNewModConfigurationScreen")
 
 	self.custombuttons = {}
 
@@ -63,7 +70,7 @@ local NewModConfigurationScreen = Class(Screen, function(self, modname, client_c
 				local _value = v.saved
 				if _value == nil then _value = v.default end
 				table.insert(self.options, {name = v.name, label = v.label, options = v.options, default = v.default, value = shallowcopy(_value), initial_value = shallowcopy(_value), hover = v.hover,
-					is_header = v.is_header,
+					choices = v.choices,
 					is_text_config = v.is_text_config,
 					is_rgb_config = v.is_rgb_config,
 					is_rgba_config = v.is_rgba_config,
@@ -142,20 +149,19 @@ local NewModConfigurationScreen = Class(Screen, function(self, modname, client_c
 		widget.opt:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
 		widget.opt:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
 		widget.opt:SetFont(CHATFONT)
-		widget.opt:SetTextSize(25)
+		widget.opt:SetTextSize(20)
 		widget.opt:SetFocusSound()
 		widget.opt:SetPosition((item_width/2)-(spinner_width/2)-40, 0)
 		widget.opt:SetOnClick(function()
-			self:GenericOptionCallback(widget.real_index, widget.opt)
+			self:GenericOptionCallback(widget.opt.data.option, widget.opt)
 		end)
 		widget.changed_image = widget:AddChild(Image("images/global_redux.xml", "wardrobe_spinner_bg.tex"))
 		widget.changed_image:SetTint(1,1,1,0.3)
-		widget.changed_image:SetSize(spinner_width, item_height)
+		widget.changed_image:SetSize(spinner_width+20, item_height)
 		widget.changed_image:SetPosition((item_width/2)-(spinner_width/2)-40+2, 0)
 		widget.changed_image:Hide()
 		widget.opt.UpdateAppearance = function(button)
-			local option = self.options[widget.real_index]
-			if not option then return end
+			local option = widget.opt.data.option
 
 			if custom_not_equal(option.value, option.initial_value) then
 				widget.changed_image:Show()
@@ -171,9 +177,21 @@ local NewModConfigurationScreen = Class(Screen, function(self, modname, client_c
 				button:SetText("████")
 				button:SetTextColour(unpack(option.value))
 				button:SetTextFocusColour(unpack(option.value))
+			elseif option.choices then
+				if not option.displaystr and type(option.value) == "table" then
+					local descs = ""
+					for k,v in ipairs(option.choices) do
+						if option.value[v.data] and descs:len() < 30 then descs = descs..v.description..", " end
+					end
+					option.displaystr = descs == "" and "--" or descs:sub(0,-3)
+				end
+
+				button:SetText(option.displaystr or "...")
+				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
+				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
 			else
 				for k,v in ipairs(option.options) do
-					if v.data == option.value then
+					if custom_equal(v.data, option.value) then
 						button:SetText(checkdesc(v.description))
 						return
 					end
@@ -187,10 +205,9 @@ local NewModConfigurationScreen = Class(Screen, function(self, modname, client_c
 		widget.revert = widget:AddChild(ImageButton("images/button_icons.xml", "undo.tex", "undo.tex"))
 		widget.revert:SetOnClick(
 			function()
-				local option = self.options[widget.real_index]
-				if not option then return end
+				local option = widget.opt.data.option
 				option.value = shallowcopy(option.default)
-
+				option.displaystr = nil
 				widget.opt:UpdateAppearance()
 				self:MakeDirty()
 			end)
@@ -201,8 +218,7 @@ local NewModConfigurationScreen = Class(Screen, function(self, modname, client_c
 		widget.unbind = widget:AddChild(ImageButton("images/global_redux.xml", "close.tex", "close.tex"))
 		widget.unbind:SetOnClick(
 			function()
-				local option = self.options[widget.real_index]
-				if not option then return end
+				local option = widget.opt.data.option
 				if self.format then
 					if self.format[-1] ~= nil then option.value = self.format[-1] else TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_negative") end
 				else
@@ -223,15 +239,13 @@ local NewModConfigurationScreen = Class(Screen, function(self, modname, client_c
 		widget.label:SetHAlign( ANCHOR_RIGHT )
 
 		widget.ApplyDescription = function()
-			local option = widget.opt.data and widget.opt.data.option.hover or ""
-			--local value = widget.opt.data and widget.opt.data.spin_options_hover[widget.opt.data.selected_value] or ""
+			local option = widget.opt.data.option.hover or ""
 			self.option_description:SetString(option)
-			--self.value_description:SetString(value)
 
-			option = self.options[widget.real_index]
+			option = widget.opt.data.option
 			if not option then return end
 			for k,v in ipairs(option.options) do
-				if v.data == option.value then
+				if custom_equal(v.data, option.value) then
 					self.value_description:SetString(v.hover or "")
 					return
 				end
@@ -267,15 +281,15 @@ local NewModConfigurationScreen = Class(Screen, function(self, modname, client_c
 			end	
 
 			if data.is_header then
-			    widget.bg:Hide()
-			    widget.opt:Hide()
-			    widget.opt:Select()
-			    widget.label:SetSize(30)
+				widget.bg:Hide()
+				widget.opt:Hide()
+				widget.opt:Select()
+				widget.label:SetSize(30)
 			else
-			    widget.bg:Show()
-			    widget.opt:Show()
-			    widget.opt:Unselect()
-			    widget.label:SetSize(25) -- same as LabelSpinner's default.
+				widget.bg:Show()
+				widget.opt:Show()
+				widget.opt:Unselect()
+				widget.label:SetSize(25) -- same as LabelSpinner's default.
 			end
 
 			if data.is_keybind then
@@ -284,7 +298,7 @@ local NewModConfigurationScreen = Class(Screen, function(self, modname, client_c
 				widget.unbind:Hide()
 			end
 
-			if data.is_text_config or data.is_rgb_config or data.is_rgba_config then
+			if data.is_text_config or data.is_rgb_config or data.is_rgba_config or data.choices then
 				widget.revert:Show()
 			else
 				widget.revert:Hide()
@@ -303,22 +317,15 @@ local NewModConfigurationScreen = Class(Screen, function(self, modname, client_c
 	end
 
 	for idx,option_item in ipairs(self.options) do
-		--local spin_options = {} --{{text="default"..tostring(idx), data="default"},{text="2", data="2"}, }
 		local spin_options_hover = {}
 		for _,v in ipairs(option_item.options) do
-		    --table.insert(spin_options, {text=v.description, data=v.data})
-		    spin_options_hover[v.data] = v.hover
+			spin_options_hover[v.data] = v.hover
 		end
 
-		--[[
-		local initial_value = option_item.value
-		if initial_value == nil then
-			initial_value = option_item.default
-		end
-		--]]
 
 		local data = {
-			is_header = option_item.is_header or #option_item.options == 1 and option_item.options[1].description and option_item.options[1].description:len() == 0,
+			is_header = #option_item.options == 1 and option_item.options[1].description and option_item.options[1].description:len() == 0,
+			choices = option_item.choices,
 			is_keybind = option_item.is_keybind,
 			is_text_config = option_item.is_text_config,
 			is_rgb_config = option_item.is_rgb_config,
@@ -339,7 +346,7 @@ local NewModConfigurationScreen = Class(Screen, function(self, modname, client_c
 				},
 				widget_width  = item_width,
 				widget_height = item_height,
-				num_visible_rows = 11,
+				num_visible_rows = 9,
 				num_columns = 1,
 				item_ctor_fn = ScrollWidgetsCtor,
 				apply_fn = ApplyDataToWidget,
@@ -351,20 +358,82 @@ local NewModConfigurationScreen = Class(Screen, function(self, modname, client_c
 
 	-- Top border of the scroll list.
 	self.horizontal_line = self.optionspanel:AddChild(Image("images/global_redux.xml", "item_divider.tex"))
-    self.horizontal_line:SetPosition(0,self.options_scroll_list.visible_rows/2 * item_height)
-    self.horizontal_line:SetSize(item_width+30, 5)
+	self.horizontal_line:SetPosition(0,self.options_scroll_list.visible_rows/2 * item_height)
+	self.horizontal_line:SetSize(item_width+30, 3)
+
+	self.search_bar = self.optionspanel:AddChild(TextEdit(CHATFONT, 20, "", UICOLOURS.GOLD_CLICKABLE))
+	self.search_bar:SetForceEdit(true)
+	self.search_bar:SetRegionSize(item_width, 30)
+	self.search_bar:SetPosition(0,self.options_scroll_list.visible_rows/2 * item_height + 14)
+	self.search_bar:SetHAlign(ANCHOR_LEFT)
+	self.search_bar.prompt_color = {215/255, 210/255, 157/255, .55}
+	self.search_bar:SetTextPrompt("Search...", self.search_bar.prompt_color) -- UICOLOURS.GOLD_CLICKABLE but less alpha
+	self.search_bar:SetIdleTextColour(UICOLOURS.GOLD_CLICKABLE)
+	self.search_bar:SetEditTextColour(UICOLOURS.WHITE)
+	self.search_bar:SetEditCursorColour(UICOLOURS.WHITE)
+
+	self.search_bar.OnGainFocus = function(self)
+	    Widget.OnGainFocus(self)
+
+	    if not self.editing then
+	        self:SetColour(UICOLOURS.GOLD_FOCUS)
+	        self.prompt:SetColour(UICOLOURS.GOLD_FOCUS)
+	    end
+	end
+
+	self.search_bar.OnLoseFocus = function(self)
+	    Widget.OnLoseFocus(self)
+
+	    if not self.editing then
+	        self:SetColour(self.idle_text_color)
+	        self.prompt:SetColour(self.prompt_color)
+	    end
+	end
+
+	self.search_bar.OnTextInputted = function() self:FilterConfigs() end
+
+	-- erase with a single right click
+	local oldoncontrol = self.search_bar.OnControl
+	self.search_bar.OnControl = function(self, control, down)
+		if control == CONTROL_SECONDARY and not down then
+			self:SetString("")
+			self.OnTextInputted()
+			return true
+		end
+		return oldoncontrol(self, control, down)
+	end
 
 	self.default_focus = self.options_scroll_list
 	self:HookupFocusMoves()
 end)
 
-function NewModConfigurationScreen:GenericOptionCallback(option_idx, option_button)
-	--print("NewModConfigurationScreen:GenericOptionCallback",option_idx, option_button)
-	local option = self.options[option_idx]
-	if not option or option.is_header then return end
 
+local function search_match(search, str)
+    if string.find( str, search, 1, true ) ~= nil then return true end
+    return false
+end
+
+function RemiNewModConfigurationScreen:FilterConfigs()
+	local query = TrimString(self.search_bar:GetString()):lower()
+
+	local filtered_configs = {}
+	if query ~= "" then
+		for k,v in pairs(self.optionwidgets) do
+			if not v.is_header and search_match(query, v.option.label:lower()) then
+				table.insert(filtered_configs, v)
+			end
+		end	
+	else
+		filtered_configs = self.optionwidgets
+	end
+	self.options_scroll_list:SetItemsData(filtered_configs)
+end
+
+function RemiNewModConfigurationScreen:GenericOptionCallback(option, option_button)
 	if option.is_keybind then
 		self:SetBind(option, option_button)
+	elseif option.choices then
+		self:SetMultipleChoices(option, option_button)
 	elseif option.is_rgb_config or option.is_rgba_config then
 		self:SetColor(option, option_button)
 	elseif option.is_text_config then
@@ -376,7 +445,34 @@ function NewModConfigurationScreen:GenericOptionCallback(option_idx, option_butt
 	end
 end
 
-function NewModConfigurationScreen:SetColor(option, option_button)
+function RemiNewModConfigurationScreen:SetMultipleChoices(option, option_button)
+	local popup
+	local buttons = {
+		{text = STRINGS.UI.MODSSCREEN.APPLY, cb = function() local descs, data = popup:CollectData(); self:OnMultipleChoicesSet(option, option_button, descs, data); TheFrontEnd:PopScreen() end},
+		-- {text = STRINGS.UI.MODSSCREEN.BACK, cb = function() TheFrontEnd:PopScreen() end}, -- "back" button is gonna be added automatically
+	}
+
+	local list_options = {}
+	local max_item_index = 0
+	for k,v in ipairs(option.choices) do
+		list_options[k] = {text = k..".\t"..checkdesc(v.description), description = v.description, hover = v.hover, data = v.data, onclick = function() end}
+		max_item_index = k
+	end
+
+	popup = ListChoiceScreen(list_options, option.label or option.name, "", buttons, nil, nil, option.value)
+	TheFrontEnd:PushScreen(popup)
+end
+
+function RemiNewModConfigurationScreen:OnMultipleChoicesSet(option, option_button, descs, data)
+	option.displaystr = descs
+	option.value = data
+	TheFrontEnd:GetSound():PlaySound("meta4/winona_remote/click", nil, .3)
+	self:MakeDirty()
+	option_button:UpdateAppearance()
+	option_button:ApplyDescription()
+end
+
+function RemiNewModConfigurationScreen:SetColor(option, option_button)
 	local popup
 	local buttons = {
 		{text = STRINGS.UI.MODSSCREEN.APPLY, cb = function() self:OnColorSet(option, option_button, popup:GetCurrentColor()); TheFrontEnd:PopScreen() end},
@@ -387,7 +483,7 @@ function NewModConfigurationScreen:SetColor(option, option_button)
 	TheFrontEnd:PushScreen(popup)
 end
 
-function NewModConfigurationScreen:OnColorSet(option, option_button, color)
+function RemiNewModConfigurationScreen:OnColorSet(option, option_button, color)
 	option.value = color
 	TheFrontEnd:GetSound():PlaySound("terraria1/skins/life_crystal", nil, .3)
 	self:MakeDirty()
@@ -395,7 +491,7 @@ function NewModConfigurationScreen:OnColorSet(option, option_button, color)
 	option_button:ApplyDescription()
 end
 
-function NewModConfigurationScreen:SetInput(option, option_button)
+function RemiNewModConfigurationScreen:SetInput(option, option_button)
 	local popup
 	local buttons = {
 		{text = STRINGS.UI.MODSSCREEN.APPLY, cb = function() self:OnInputSet(option, option_button, popup:GetActualString()); TheFrontEnd:PopScreen() end},
@@ -417,16 +513,16 @@ function NewModConfigurationScreen:SetInput(option, option_button)
 
 	-- Add hover as body text
 	popup.body = popup.proot:AddChild(Text(CHATFONT, 22, option.hover or "--", UICOLOURS.WHITE))
-    popup.body:EnableWordWrap(true)
-    popup.body:SetPosition(0, 70)
-    popup.body:SetRegionSize(600,280)
-    popup.body:SetVAlign(ANCHOR_MIDDLE)
+	popup.body:EnableWordWrap(true)
+	popup.body:SetPosition(0, 70)
+	popup.body:SetRegionSize(600,280)
+	popup.body:SetVAlign(ANCHOR_MIDDLE)
 
-    TheFrontEnd:PushScreen(popup)
+	TheFrontEnd:PushScreen(popup)
 	--popup.edit_text:SetEditing(true)
 end
 
-function NewModConfigurationScreen:OnInputSet(option, option_button, input)
+function RemiNewModConfigurationScreen:OnInputSet(option, option_button, input)
 	option.value = input
 	TheFrontEnd:GetSound():PlaySound("meta4/winona_remote/click", nil, .3)
 	self:MakeDirty()
@@ -434,19 +530,19 @@ function NewModConfigurationScreen:OnInputSet(option, option_button, input)
 	option_button:ApplyDescription()
 end
 
-function NewModConfigurationScreen:AlternateOption(option, option_button)
+function RemiNewModConfigurationScreen:AlternateOption(option, option_button)
 	option.value = not option.value
-	--TheFrontEnd:GetSound():PlaySound(option.value and "meta4/winona_battery/battery_level_7_f19" or "meta4/winona_battery/battery_level_1_f19", nil, .3)
 	TheFrontEnd:GetSound():PlaySound(option.value and "meta4/wires_minigame/wire_connect" or "meta4/wires_minigame/wire_disconnect", nil, .75)
 	self:MakeDirty()
 	option_button:UpdateAppearance()
 	option_button:ApplyDescription()
 end
 
-function NewModConfigurationScreen:SetOption(option, option_button)
-	--print("NewModConfigurationScreen:SetOption",option, option_button)
+function RemiNewModConfigurationScreen:SetOption(option, option_button)
+	print("RemiNewModConfigurationScreen:SetOption",option, option_button)
 	local function apply(value)
 		option.value = value
+		TheFrontEnd:GetSound():PlaySound("meta4/winona_remote/click", nil, .3)
 		self:MakeDirty()
 		TheFrontEnd:PopScreen()
 		option_button:UpdateAppearance()
@@ -454,42 +550,31 @@ function NewModConfigurationScreen:SetOption(option, option_button)
 	end
 
 	local list_options = {}
-	local hovers = {}
 	local default_option = "???"
+	local amount_options = 0
 	for k,v in ipairs(option.options) do
 		list_options[k] = {text = k..".\t"..checkdesc(v.description), hover = v.hover, onclick = function() apply(v.data) end}
-		if v.data == option.default then default_option = checkdesc(v.description) end
+		if custom_equal(v.data, option.default) then default_option = checkdesc(v.description) end
+		amount_options = amount_options + 1 -- k
 	end
 
-	local popup = TextListPopup(list_options, option.label or option.name, string.format(STRINGS.UI.CONTROLSSCREEN.DEFAULT_CONTROL_TEXT, default_option))
-	for k,v in ipairs(popup.scroll_list.widgets_to_update) do
-		local oldfn = v.btn.OnGainFocus
-		v.btn.OnGainFocus = function(...)
-			oldfn(...) 
-			local text = v.btn.text:GetString()
-			text = tonumber(text:match("^[0-9]+"))
-			if text and list_options[text] then 
-				popup.dialog.body:SetString(string.format(STRINGS.UI.CONTROLSSCREEN.DEFAULT_CONTROL_TEXT, default_option).."\n"..(list_options[text].hover or "")) 
-			end
-		end
-	end
-	-- popup.scroll_list.scroll_per_click = math.min(2, popup.scroll_list.items_per_view)
-
+	local popup = ListOptionScreen(list_options, option.label or option.name, string.format(STRINGS.UI.CONTROLSSCREEN.DEFAULT_CONTROL_TEXT, default_option))
+	popup.scroll_list.scroll_per_click = math.clamp(1+math.floor(amount_options/30), 1, 5)
 	TheFrontEnd:PushScreen(popup)
 end
 
-function NewModConfigurationScreen:SetBind(option, option_button)
-	--print("NewModConfigurationScreen:SetBind",option, option_button)
+function RemiNewModConfigurationScreen:SetBind(option, option_button)
+	--print("RemiNewModConfigurationScreen:SetBind",option, option_button)
 
 	--local loc_text = STRINGS.UI.CONTROLSSCREEN.INPUTS[1][option.value] or "Missing key"
 	local valid_options = {--[[{text = "Esc to cancel."},{text = "Backspace to remove bind."}]]}
 	local default_key = "???"
 	for k,v in ipairs(option.options) do
-		if type(v.data) == "number" and v.data > 0 or type(v.data) ~= "number" then table.insert(valid_options, {text = checkdesc(v.description)}) end
-		if v.data == option.default then default_key = checkdesc(v.description) end
+		if type(v.data) == "number" and v.data > 0 or type(v.data) ~= "number" then table.insert(valid_options, {text = "-\t"..checkdesc(v.description)}) end
+		if custom_equal(v.data, option.default) then default_key = checkdesc(v.description) end
 	end
 
-	local popup = TextListPopup(valid_options, option.label or option.name, STRINGS.UI.CONTROLSSCREEN.CONTROL_SELECT.."\n"..string.format(STRINGS.UI.CONTROLSSCREEN.DEFAULT_CONTROL_TEXT, default_key), {}, nil, true)
+	local popup = ListOptionScreen(valid_options, option.label or option.name, PRESS_A_BUTTON_STRING.."\n"..string.format(STRINGS.UI.CONTROLSSCREEN.DEFAULT_CONTROL_TEXT, default_key), {}, nil, true)
 	popup.scroll_list.scroll_per_click = math.min(5, popup.scroll_list.items_per_view)
 
 	local oldoncontrol = popup.OnControl
@@ -517,7 +602,7 @@ local function GetGenericCtrlShiftAlt(input)
 	if input == KEY_LALT or input == KEY_RALT then return KEY_ALT end
 end
 
-function NewModConfigurationScreen:IsValidInputForOption(input, option)
+function RemiNewModConfigurationScreen:IsValidInputForOption(input, option)
 	if not input then return end
 	if input == KEY_ESCAPE then return input end
 
@@ -527,12 +612,12 @@ function NewModConfigurationScreen:IsValidInputForOption(input, option)
 	end
 end
 
-function NewModConfigurationScreen:GetValidatedInput(input, option)
+function RemiNewModConfigurationScreen:GetValidatedInput(input, option)
 	return self:IsValidInputForOption(input, option) or self:IsValidInputForOption(GetGenericCtrlShiftAlt(input), option)
 end
 
-function NewModConfigurationScreen:OnBindSet(option, option_button, input)
-	--print("NewModConfigurationScreen:OnBindSet",option, option_button, input)
+function RemiNewModConfigurationScreen:OnBindSet(option, option_button, input)
+	--print("RemiNewModConfigurationScreen:OnBindSet",option, option_button, input)
 
 	--print("initial input:", input)
 	local valid_input = self:GetValidatedInput(input, option)
@@ -547,7 +632,7 @@ function NewModConfigurationScreen:OnBindSet(option, option_button, input)
 
 		if valid_input ~= KEY_ESCAPE then
 			option.value = valid_input
-			TheFrontEnd:GetSound():PlaySound("meta4/winona_remote/click", nil, .15)
+			TheFrontEnd:GetSound():PlaySound("meta4/winona_remote/click", nil, .3)
 			option_button:UpdateAppearance()
 			option_button:ApplyDescription()
 			self:MakeDirty()
@@ -557,10 +642,11 @@ function NewModConfigurationScreen:OnBindSet(option, option_button, input)
 	end	
 end
 
-function NewModConfigurationScreen:ResetToDefaultValues()
+function RemiNewModConfigurationScreen:ResetToDefaultValues()
 	local function reset()
 		for i,v in ipairs(self.optionwidgets) do 
 			self.options[i].value = shallowcopy(self.options[i].default)
+			self.options[i].displaystr = nil
 			--v.selected_value = self.options[i].default
 		end
 		--self.options_scroll_list:RefreshView()
@@ -577,7 +663,7 @@ function NewModConfigurationScreen:ResetToDefaultValues()
 	end
 end
 
-function NewModConfigurationScreen:CollectSettings()
+function RemiNewModConfigurationScreen:CollectSettings()
 	local settings = nil
 	for i,v in ipairs(self.options) do
 		if not settings then settings = {} end
@@ -586,20 +672,20 @@ function NewModConfigurationScreen:CollectSettings()
 	return settings
 end
 
-function NewModConfigurationScreen:Apply()
+function RemiNewModConfigurationScreen:Apply()
 	if self:IsDirty() then
 		local settings = self:CollectSettings()
 		KnownModIndex:SaveConfigurationOptions(function()
 			self:MakeDirty(false)
-		    TheFrontEnd:PopScreen()
+			TheFrontEnd:PopScreen()
 		end, self.modname, settings, self.client_config)
 	else
 		self:MakeDirty(false)
-	    TheFrontEnd:PopScreen()
+		TheFrontEnd:PopScreen()
 	end
 end
 
-function NewModConfigurationScreen:ConfirmRevert(callback)
+function RemiNewModConfigurationScreen:ConfirmRevert(callback)
 	TheFrontEnd:PushScreen(
 		PopupDialogScreen( STRINGS.UI.MODSSCREEN.BACKTITLE, STRINGS.UI.MODSSCREEN.BACKBODY,
 		  {
@@ -618,20 +704,20 @@ function NewModConfigurationScreen:ConfirmRevert(callback)
 	)
 end
 
-function NewModConfigurationScreen:Cancel()
+function RemiNewModConfigurationScreen:Cancel()
 	if self:IsDirty() and not (self.started_default and self:IsDefaultSettings()) then
 		self:ConfirmRevert(function()
 			self:MakeDirty(false)
 			TheFrontEnd:PopScreen()
-		    TheFrontEnd:PopScreen()
+			TheFrontEnd:PopScreen()
 		end)
 	else
 		self:MakeDirty(false)
-	    TheFrontEnd:PopScreen()
+		TheFrontEnd:PopScreen()
 	end
 end
 
-function NewModConfigurationScreen:MakeDirty(dirty)
+function RemiNewModConfigurationScreen:MakeDirty(dirty)
 	if dirty ~= nil then
 		self.dirty = dirty
 	else
@@ -639,11 +725,11 @@ function NewModConfigurationScreen:MakeDirty(dirty)
 	end
 end
 
-function NewModConfigurationScreen:IsDirty()
+function RemiNewModConfigurationScreen:IsDirty()
 	return self.dirty
 end
 
-function NewModConfigurationScreen:IsDefaultSettings()
+function RemiNewModConfigurationScreen:IsDefaultSettings()
 	local alldefault = true
 	for i,v in ipairs(self.options) do
 		-- print(options[i].value, options[i].default)
@@ -655,31 +741,31 @@ function NewModConfigurationScreen:IsDefaultSettings()
 	return alldefault
 end
 
-function NewModConfigurationScreen:OnControl(control, down)
-    if NewModConfigurationScreen._base.OnControl(self, control, down) then return true end
+function RemiNewModConfigurationScreen:OnControl(control, down)
+	if RemiNewModConfigurationScreen._base.OnControl(self, control, down) then return true end
 
-    if not down then
-	    if control == CONTROL_CANCEL then
+	if not down then
+		if control == CONTROL_CANCEL then
 			self:Cancel()
-            return true
+			return true
 
-	    elseif control == CONTROL_MENU_START and TheInput:ControllerAttached() and not TheFrontEnd.tracking_mouse then
-            self:Apply()
-            return true
+		elseif control == CONTROL_MENU_START and TheInput:ControllerAttached() and not TheFrontEnd.tracking_mouse then
+			self:Apply()
+			return true
 
-        elseif control == CONTROL_MENU_BACK and TheInput:ControllerAttached() then
+		elseif control == CONTROL_MENU_BACK and TheInput:ControllerAttached() then
 			self:ResetToDefaultValues()
 			return true
-        end
+		end
 	end
 end
 
-function NewModConfigurationScreen:HookupFocusMoves()
+function RemiNewModConfigurationScreen:HookupFocusMoves()
 
 end
 
-function NewModConfigurationScreen:GetHelpText()
+function RemiNewModConfigurationScreen:GetHelpText()
 	return ""
 end
 
-return NewModConfigurationScreen
+return RemiNewModConfigurationScreen
