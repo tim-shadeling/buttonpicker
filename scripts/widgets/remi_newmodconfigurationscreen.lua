@@ -161,7 +161,8 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 		widget.changed_image:SetPosition((item_width/2)-(spinner_width/2)-40+2, 0)
 		widget.changed_image:Hide()
 		widget.opt.UpdateAppearance = function(button)
-			local option = widget.opt.data.option
+			local option = widget.opt.data and widget.opt.data.option
+			if not option then return end
 
 			if custom_not_equal(option.value, option.initial_value) then
 				widget.changed_image:Show()
@@ -190,6 +191,9 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
 				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
 			else
+				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
+				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+				--
 				for k,v in ipairs(option.options) do
 					if custom_equal(v.data, option.value) then
 						button:SetText(checkdesc(v.description))
@@ -197,8 +201,6 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 					end
 				end
 				button:SetText(option.is_keybind and type(option.value) == "number" and option.value <= 0 and STRINGS.UI.CONTROLSSCREEN.INPUTS[6][2] or "!!! "..STRINGS.UI.CONTROLSSCREEN.INVALID_CONTROL.." !!!")
-				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
-				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
 			end
 		end
 
@@ -239,11 +241,11 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 		widget.label:SetHAlign( ANCHOR_RIGHT )
 
 		widget.ApplyDescription = function()
-			local option = widget.opt.data.option.hover or ""
-			self.option_description:SetString(option)
-
-			option = widget.opt.data.option
+			local option = widget.opt.data and widget.opt.data.option
 			if not option then return end
+
+			self.option_description:SetString(option.hover or "")
+
 			for k,v in ipairs(option.options) do
 				if custom_equal(v.data, option.value) then
 					self.value_description:SetString(v.hover or "")
