@@ -5,12 +5,36 @@ local Text = require "widgets/text"
 local Image = require "widgets/image"
 local TextEdit = require "widgets/textedit"
 
-local COLOR_NAMES = {"Red:", "Green:", "Blue:", "Alpha:"}
+local lang = LanguageTranslator.defaultlang or "en"
+local languages =
+{
+    zh = "zh", -- Chinese for Steam
+    zhr = "zh", -- Chinese for WeGame
+    ch = "zh", -- Chinese mod
+    chs = "zh", -- Chinese mod
+    sc = "zh", -- simple Chinese
+    zht = "zh", -- traditional Chinese for Steam
+	tc = "zh", -- traditional Chinese
+	cht = "zh", -- Chinese mod
+}
+
+if languages[lang] ~= nil then
+    lang = languages[lang]
+else
+    lang = "en"
+end
+
+local chinese = lang == "zh"
+
+local COLOR_NAMES = chinese and {"红:", "绿:", "蓝:", "不透明度:"} or {"Red:", "Green:", "Blue:", "Alpha:"}
+local NEWCOLOR_LBL_STRING = chinese and "新:" or "New:"
+local OLDCOLOR_LBL_STRING = chinese and "旧:" or "Old:"
+local SCROLL_INFO_STRING = chinese and "(文本框是可滚动的)" or "(textboxes are scrollable)"
 
 local RemiColorHelperScreen = Class(Screen, function(self, title, buttons, initial_color, include_alpha)
 	Screen._ctor(self, "RemiColorHelperScreen")
 	self.tint = self:AddChild(TEMPLATES.BackgroundTint())
-	
+
 	self.root = self:AddChild(Widget("root"))
 	self.root:SetVAnchor(0)
 	self.root:SetHAnchor(0)
@@ -27,20 +51,20 @@ local RemiColorHelperScreen = Class(Screen, function(self, title, buttons, initi
 	newcolor:SetTint(unpack(initial_color))
 	newcolor.ep_current_color = initial_color
 	self.newcolor = newcolor
-	self.newcolor_lbl = self.root:AddChild(Text(CHATFONT, 25, "New:"))
+	self.newcolor_lbl = self.root:AddChild(Text(CHATFONT, 25, NEWCOLOR_LBL_STRING))
 	self.newcolor_lbl:SetPosition(100,210)
 	local oldcolor = self.root:AddChild(Image("images/global.xml", "square.tex"))
 	oldcolor:SetPosition(-100,140)
 	oldcolor:ScaleToSize(200,100)
 	oldcolor:SetTint(unpack(initial_color))
 	self.oldcolor = oldcolor
-	self.oldcolor_lbl = self.root:AddChild(Text(CHATFONT, 25, "Old:"))
+	self.oldcolor_lbl = self.root:AddChild(Text(CHATFONT, 25, OLDCOLOR_LBL_STRING))
 	self.oldcolor_lbl:SetPosition(-100,210)
 
 	self.colorlabels = {}
 	self.colorpickers = {}
 
-	self.scroll_info = self.root:AddChild(Text(CHATFONT, 18, "(textboxes are scrollable)"))
+	self.scroll_info = self.root:AddChild(Text(CHATFONT, 18, SCROLL_INFO_STRING))
 	self.scroll_info:SetPosition(0, 40)
 
 	local channels = include_alpha and 4 or 3

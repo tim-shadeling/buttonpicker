@@ -42,9 +42,27 @@ local function custom_equal(a,b)
 	return not custom_not_equal(a,b) -- wow
 end
 
-local chinese = LanguageTranslator.defaultlang or "en"
-chinese = chinese == "zh" or chinese == "zht"
-local VALUESTR = chinese and "选项值" or "Value:" 
+local lang = LanguageTranslator.defaultlang or "en"
+local languages =
+{
+    zh = "zh", -- Chinese for Steam
+    zhr = "zh", -- Chinese for WeGame
+    ch = "zh", -- Chinese mod
+    chs = "zh", -- Chinese mod
+    sc = "zh", -- simple Chinese
+    zht = "zh", -- traditional Chinese for Steam
+	tc = "zh", -- traditional Chinese
+	cht = "zh", -- Chinese mod
+}
+
+if languages[lang] ~= nil then
+    lang = languages[lang]
+else
+    lang = "en"
+end
+
+local chinese = lang == "zh"
+local VALUESTR = chinese and "选项值" or "Value:"
 local PRESS_A_BUTTON_STRING = chinese and "从下面的列表中按一个按钮！" or "Press a button from the list below!"
 
 local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, client_config)
@@ -268,7 +286,7 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 		return widget
 	end
 
-	local function ApplyDataToWidget(context, widget, data, idx)		
+	local function ApplyDataToWidget(context, widget, data, idx)
 		widget.opt.data = data
 		if data then
 			local label = (data.option.label or data.option.name or STRINGS.UI.MODSSCREEN.UNKNOWN_MOD_CONFIG_SETTING)
@@ -280,7 +298,7 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 
 			if widget.focus then
 				widget:ApplyDescription()
-			end	
+			end
 
 			if data.is_header then
 				widget.bg:Hide()
@@ -424,7 +442,7 @@ function RemiNewModConfigurationScreen:FilterConfigs()
 			if not v.is_header and search_match(query, v.option.label:lower()) then
 				table.insert(filtered_configs, v)
 			end
-		end	
+		end
 	else
 		filtered_configs = self.optionwidgets
 	end
@@ -641,12 +659,12 @@ function RemiNewModConfigurationScreen:OnBindSet(option, option_button, input)
 		end
 
 		self.is_mapping = false
-	end	
+	end
 end
 
 function RemiNewModConfigurationScreen:ResetToDefaultValues()
 	local function reset()
-		for i,v in ipairs(self.optionwidgets) do 
+		for i,v in ipairs(self.optionwidgets) do
 			self.options[i].value = shallowcopy(self.options[i].default)
 			self.options[i].displaystr = nil
 			--v.selected_value = self.options[i].default
