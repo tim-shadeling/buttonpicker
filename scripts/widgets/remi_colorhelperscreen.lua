@@ -106,7 +106,7 @@ local RemiColorHelperScreen = Class(Screen, function(self, title, buttons, initi
 			if not down and (control == CONTROL_SCROLLFWD or control == CONTROL_SCROLLBACK) then
 				self.actualvalue = math.clamp(self.actualvalue + (control == CONTROL_SCROLLFWD and -.02 or .02), 0, 1)
 				self:SetString(tostring(self.actualvalue))
-				self.actualvalue = tonumber(self.actualvalue) or self.actualvalue
+				self.actualvalue = tonumber(self:GetString()) or self.actualvalue
 				newcolor.ep_current_color[i] = self.actualvalue
 				newcolor:SetTint(unpack(newcolor.ep_current_color))
 				return true
