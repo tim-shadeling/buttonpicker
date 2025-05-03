@@ -64,6 +64,7 @@ end
 local chinese = lang == "zh"
 local VALUESTR = chinese and "选项值" or "Value:"
 local PRESS_A_BUTTON_STRING = chinese and "从下面的列表中按一个按钮！" or "Press a button from the list below!"
+local SEARCH_BAR_STRING = chinese and "搜索..." or "Search..."
 
 local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, client_config)
 	Screen._ctor(self, "RemiNewModConfigurationScreen")
@@ -387,7 +388,7 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 	self.search_bar:SetPosition(0,self.options_scroll_list.visible_rows/2 * item_height + 14)
 	self.search_bar:SetHAlign(ANCHOR_LEFT)
 	self.search_bar.prompt_color = {215/255, 210/255, 157/255, .55}
-	self.search_bar:SetTextPrompt("Search...", self.search_bar.prompt_color) -- UICOLOURS.GOLD_CLICKABLE but less alpha
+	self.search_bar:SetTextPrompt(SEARCH_BAR_STRING, self.search_bar.prompt_color) -- UICOLOURS.GOLD_CLICKABLE but less alpha
 	self.search_bar:SetIdleTextColour(UICOLOURS.GOLD_CLICKABLE)
 	self.search_bar:SetEditTextColour(UICOLOURS.WHITE)
 	self.search_bar:SetEditCursorColour(UICOLOURS.WHITE)
