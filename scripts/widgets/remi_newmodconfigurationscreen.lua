@@ -560,7 +560,7 @@ function RemiNewModConfigurationScreen:AlternateOption(option, option_button)
 end
 
 function RemiNewModConfigurationScreen:SetOption(option, option_button)
-	print("RemiNewModConfigurationScreen:SetOption",option, option_button)
+	--print("RemiNewModConfigurationScreen:SetOption",option, option_button)
 	local function apply(value)
 		option.value = value
 		TheFrontEnd:GetSound():PlaySound("meta4/winona_remote/click", nil, .3)
