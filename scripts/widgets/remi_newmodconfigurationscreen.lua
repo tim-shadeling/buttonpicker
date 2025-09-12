@@ -75,7 +75,7 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 	self.client_config = client_config
 	local is_client_only = KnownModIndex:GetModInfo(modname) and KnownModIndex:GetModInfo(modname).client_only_mod
 
-	self.config = KnownModIndex:LoadModConfigurationOptions(modname)
+	self.config = KnownModIndex:LoadModConfigurationOptions(modname, client_config)
 	self.options = {}
 	local subtable = ManualSupport[self.modname]
 	if subtable then
