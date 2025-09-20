@@ -73,34 +73,45 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 
 	self.modname = modname
 	self.client_config = client_config
-	local is_client_only = KnownModIndex:GetModInfo(modname) and KnownModIndex:GetModInfo(modname).client_only_mod
+	local modinfo = KnownModIndex:GetModInfo(modname)
+	local is_client_only = modinfo and modinfo.client_only_mod
+
+	if modinfo and modinfo.keys then
+		self.format = require "remi_keybinduiformat"
+		print("[ConfExt] Special Keybind UI Demo format loaded.")
+	else
+		local subtable = ManualSupport[self.modname]
+		if subtable then
+			self.keybinds = subtable.keybinds
+			self.format = subtable.format
+			print("[ConfExt] Manual support loaded.")
+		end
+	end
 
 	self.config = KnownModIndex:LoadModConfigurationOptions(modname, client_config)
 	self.options = {}
-	local subtable = ManualSupport[self.modname]
-	if subtable then
-		self.keybinds = subtable.keybinds
-		self.format = subtable.format
-	end
 
 	if self.config and type(self.config) == "table" then
 		for i,v in ipairs(self.config) do
 			if v.name and v.options and (v.saved ~= nil or v.default ~= nil) and (is_client_only or not v.client or self.client_config) then
 				local _value = v.saved
 				if _value == nil then _value = v.default end
+				-- Calculate this beforehand cus it's used more than once
+				local is_keybind = (self.keybinds and self.keybinds[v.name] or v.is_keybind) or (v.options == (modinfo and modinfo.keys))
+				--
 				table.insert(self.options, {name = v.name, label = v.label, options = v.options, default = v.default, value = shallowcopy(_value), initial_value = shallowcopy(_value), hover = v.hover,
 					choices = v.choices,
 					is_text_config = v.is_text_config,
 					is_rgb_config = v.is_rgb_config,
 					is_rgba_config = v.is_rgba_config,
-					is_keybind = self.keybinds and self.keybinds[v.name] or v.is_keybind,
+					is_keybind = is_keybind,
 					is_toggle = #v.options == 2 and type(v.options[1].data) == "boolean" and type(v.options[2].data) == "boolean" and v.options[1].data ~= v.options[2].data}
 				)
 
 				-- Here if we detect an options that is keybind but has strings as data values, we'll have to use a different format
-				if not self.format and v.is_keybind and v.options[1] and type(v.options[1].data) == "string" then
+				if not self.format and is_keybind and v.options[1] and type(v.options[1].data) == "string" then
 					self.format = require "remi_commonstringformat"
-					print("[ConvConf] Common format loaded.")
+					print("[ConfExt] Common format loaded.")
 				end
 			end
 		end
