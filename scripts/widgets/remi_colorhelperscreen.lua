@@ -122,7 +122,7 @@ local RemiColorHelperScreen = Class(Screen, function(self, title, buttons, initi
 	--self.backbtn:SetPosition(0,-200)
 
 	local w,h = TheSim:GetScreenSize()
-	self.root:SetScale(w/RESOLUTION_X, h/RESOLUTION_Y)
+	self.root:SetScale(w/RESOLUTION_X) -- h/RESOLUTION_Y
 end)
 
 function RemiColorHelperScreen:GetCurrentColor()

@@ -8,6 +8,7 @@ local function NewModsTab(ModsTab)
     	    -- ModConfigurationScreen has different behavior for server (a save -- dammit I missed this part!
     	    -- slot) and client (frontend mods). 
     	    local is_clientonly_config = not self.settings.is_configuring_server
+    	    --print(is_clientonly_config)
     	    TheFrontEnd:PushScreen(NewModConfigurationScreen(self.currentmodname, is_clientonly_config))
     	end
     end

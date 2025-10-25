@@ -18,6 +18,11 @@ local function checkdesc(desc)
 	return (type(desc) == "string" or type(desc) == "number") and tostring(desc) or "!!! WRONG DESC !!!"
 end
 
+local VALID_FONTS = {["opensans"] = true, ["bp100"] = true, ["bp50"] = true, ["buttonfont"] = true, ["spirequal"] = true, ["spirequal_small"] = true, ["spirequal_outline"] = true, ["spirequal_outline_small"] = true, ["stint-ucr"] = true, ["talkingfont"] = true, ["talkingfont_wormwood"] = true, ["talkingfont_tradein"] = true, ["talkingfont_hermit"] = true, ["bellefair"] = true, ["hammerhead"] = true, ["bellefair_outline"] = true, ["stint-small"] = true, ["ptmono"] = true}
+local function fontexists(font)
+	if font ~= nil and VALID_FONTS[font] then return font end
+end
+
 local function custom_not_equal(a,b)
 	if type(a) ~= type(b) then return true end
 	if type(a) == "table" then
@@ -66,13 +71,14 @@ local VALUESTR = chinese and "选项值" or "Value:"
 local PRESS_A_BUTTON_STRING = chinese and "从下面的列表中按一个按钮！" or "Press a button from the list below!"
 local SEARCH_BAR_STRING = chinese and "搜索..." or "Search..."
 
-local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, client_config)
+local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, client_config, callback)
 	Screen._ctor(self, "RemiNewModConfigurationScreen")
 
 	self.custombuttons = {}
 
 	self.modname = modname
 	self.client_config = client_config
+	self.callback = callback
 	local modinfo = KnownModIndex:GetModInfo(modname)
 	local is_client_only = modinfo and modinfo.client_only_mod
 
@@ -101,6 +107,7 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				--
 				table.insert(self.options, {name = v.name, label = v.label, options = v.options, default = v.default, value = shallowcopy(_value), initial_value = shallowcopy(_value), hover = v.hover,
 					choices = v.choices,
+					is_font_config = v.is_font_config,
 					is_text_config = v.is_text_config,
 					is_rgb_config = v.is_rgb_config,
 					is_rgba_config = v.is_rgba_config,
@@ -204,10 +211,12 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				button:SetText(tostring(option.value))
 				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
 				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+				button:SetFont(CHATFONT)
 			elseif option.is_rgb_config or option.is_rgba_config then
 				button:SetText("████")
 				button:SetTextColour(unpack(option.value))
 				button:SetTextFocusColour(unpack(option.value))
+				button:SetFont(CHATFONT)
 			elseif option.choices then
 				if not option.displaystr and type(option.value) == "table" then
 					local descs = ""
@@ -220,13 +229,16 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				button:SetText(option.displaystr or "...")
 				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
 				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+				button:SetFont(CHATFONT)
 			else
 				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
 				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+				button:SetFont(CHATFONT)
 				--
 				for k,v in ipairs(option.options) do
 					if custom_equal(v.data, option.value) then
 						button:SetText(checkdesc(v.description))
+						if option.is_font_config then button:SetFont(fontexists(v.data) or DEFAULTFONT) else button:SetFont(CHATFONT) end
 						return
 					end
 				end
@@ -279,6 +291,7 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 			for k,v in ipairs(option.options) do
 				if custom_equal(v.data, option.value) then
 					self.value_description:SetString(v.hover or "")
+					if option.is_font_config then self.value_description:SetFont(fontexists(v.data) or DEFAULTFONT) else self.value_description:SetFont(CHATFONT) end
 					return
 				end
 			end
@@ -585,12 +598,12 @@ function RemiNewModConfigurationScreen:SetOption(option, option_button)
 	local default_option = "???"
 	local amount_options = 0
 	for k,v in ipairs(option.options) do
-		list_options[k] = {text = k..".\t"..checkdesc(v.description), hover = v.hover, onclick = function() apply(v.data) end}
+		list_options[k] = {text = k..".\t"..checkdesc(v.description), hover = v.hover, onclick = function() apply(v.data) end, data = v.data}
 		if custom_equal(v.data, option.default) then default_option = checkdesc(v.description) end
 		amount_options = amount_options + 1 -- k
 	end
 
-	local popup = ListOptionScreen(list_options, option.label or option.name, string.format(STRINGS.UI.CONTROLSSCREEN.DEFAULT_CONTROL_TEXT, default_option))
+	local popup = ListOptionScreen(list_options, option.label or option.name, string.format(STRINGS.UI.CONTROLSSCREEN.DEFAULT_CONTROL_TEXT, default_option), nil, nil, nil, option.is_font_config)
 	popup.scroll_list.scroll_per_click = math.clamp(1+math.floor(amount_options/30), 1, 5)
 	TheFrontEnd:PushScreen(popup)
 end
@@ -709,6 +722,7 @@ function RemiNewModConfigurationScreen:Apply()
 		local settings = self:CollectSettings()
 		KnownModIndex:SaveConfigurationOptions(function()
 			self:MakeDirty(false)
+			if self.callback then self.callback() end
 			TheFrontEnd:PopScreen()
 		end, self.modname, settings, self.client_config)
 	else

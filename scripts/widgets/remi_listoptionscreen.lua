@@ -4,8 +4,15 @@ local Widget = require "widgets/widget"
 local ImageButton = require "widgets/imagebutton"
 local TEMPLATES = require "widgets/redux/templates"
 
-local ListOptionScreen = Class(Screen, function(self, list_items, title_text, body_text, buttons, spacing, nohelpbutton)
+local VALID_FONTS = {["opensans"] = true, ["bp100"] = true, ["bp50"] = true, ["buttonfont"] = true, ["spirequal"] = true, ["spirequal_small"] = true, ["spirequal_outline"] = true, ["spirequal_outline_small"] = true, ["stint-ucr"] = true, ["talkingfont"] = true, ["talkingfont_wormwood"] = true, ["talkingfont_tradein"] = true, ["talkingfont_hermit"] = true, ["bellefair"] = true, ["hammerhead"] = true, ["bellefair_outline"] = true, ["stint-small"] = true, ["ptmono"] = true}
+local function fontexists(font)
+    if font ~= nil and VALID_FONTS[font] then return font end
+end
+
+local ListOptionScreen = Class(Screen, function(self, list_items, title_text, body_text, buttons, spacing, nohelpbutton, font_config)
     Screen._ctor(self, "RemiListOptionScreen")
+
+    self.font_config = font_config
 
     local scroll_height = 380
     local body_height = 0
@@ -63,6 +70,8 @@ local ListOptionScreen = Class(Screen, function(self, list_items, title_text, bo
         	btn:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
         	btn:SetFont(CHATFONT)
         	btn:SetTextSize(20)
+            btn.text:SetRegionSize(content_width-30,item_height)
+            btn.text:SetHAlign(ANCHOR_LEFT)
             item.btn = btn -- item.root:AddChild(TEMPLATES.StandardButton(nil, "", {content_width+20,item_height+10}))
             item.text = item.btn.text
 
@@ -88,9 +97,10 @@ local ListOptionScreen = Class(Screen, function(self, list_items, title_text, bo
         item:SetOnGainFocus(function()
             self.scroll_list:OnWidgetFocus(item)
             --
-            local hover = list_items[item.real_index]
-            hover = hover and hover.hover and ("\n--\n"..hover.hover) or ""
+            local data = list_items[item.real_index]
+            local hover = data and data.hover and ("\n--\n"..data.hover) or ""
             self.dialog.body:SetString(body_text..hover)
+            if self.font_config then self.dialog.body:SetFont(fontexists(data.data) or DEFAULTFONT) end
         end)
 
         return item
@@ -102,8 +112,10 @@ local ListOptionScreen = Class(Screen, function(self, list_items, title_text, bo
             item:SetOnClick(data.onclick)
             item.text:SetTruncatedString(data.text, content_width-25, 75, true)
             -- left align
-            local w, h = item.text:GetRegionSize()
-            item.text:SetPosition(-content_width/2 + w/2 + 20, 0, 0)
+            --local w, h = item.text:GetRegionSize()
+            --item.text:SetPosition(-content_width/2 + w/2 + 20, 0, 0)
+
+            if self.font_config then item.text:SetFont(fontexists(data.data) or DEFAULTFONT) end
 
             item.root:Show()
         else
