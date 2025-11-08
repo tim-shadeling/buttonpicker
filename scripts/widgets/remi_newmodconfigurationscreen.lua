@@ -10,6 +10,8 @@ local ImageButton = require "widgets/imagebutton"
 local PopupDialogScreen = require "screens/redux/popupdialog"
 local ListOptionScreen = require "widgets/remi_listoptionscreen"
 local ListChoiceScreen = require "widgets/remi_listchoicescreen"
+local ArrayEditScreen = require "widgets/remi_arrayeditscreen"
+local DictionaryEditScreen = require "widgets/remi_dictionaryeditscreen"
 local InputDialogScreen = require "screens/redux/inputdialog"
 local ManualSupport = require "remi_manualsupport"
 local ColorHelperScreen = require "widgets/remi_colorhelperscreen"
@@ -106,6 +108,9 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				local is_keybind = (self.keybinds and self.keybinds[v.name] or v.is_keybind) or (v.options == (modinfo and modinfo.keys))
 				--
 				table.insert(self.options, {name = v.name, label = v.label, options = v.options, default = v.default, value = shallowcopy(_value), initial_value = shallowcopy(_value), hover = v.hover,
+					is_set_config = v.is_set_config,
+					is_array_config = v.is_array_config,
+					is_dictionary_config = v.is_dictionary_config,
 					choices = v.choices,
 					is_font_config = v.is_font_config,
 					is_text_config = v.is_text_config,
@@ -230,6 +235,45 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
 				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
 				button:SetFont(CHATFONT)
+			elseif option.is_set_config then
+				if not option.displaystr and type(option.value) == "table" then
+					local descs = ""
+					for k in pairs(option.value) do
+						if k ~= "" and descs:len() < 30 then descs = descs..k..", " end
+					end
+					option.displaystr = descs == "" and "--" or descs:sub(0,-3)
+				end
+
+				button:SetText(option.displaystr or "...")
+				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
+				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+				button:SetFont(CHATFONT)
+			elseif option.is_array_config then
+				if not option.displaystr and type(option.value) == "table" then
+					local descs = ""
+					for k,v in ipairs(option.value) do
+						if v ~= "" and descs:len() < 30 then descs = descs..v..", " end
+					end
+					option.displaystr = descs == "" and "--" or descs:sub(0,-3)
+				end
+
+				button:SetText(option.displaystr or "...")
+				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
+				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+				button:SetFont(CHATFONT)
+			elseif option.is_dictionary_config then
+				if not option.displaystr and type(option.value) == "table" then
+					local descs = ""
+					for k,v in pairs(option.value) do
+						if k ~= "" and v ~= "" and descs:len() < 30 then descs = descs..k.." = "..v..", " end
+					end
+					option.displaystr = descs == "" and "--" or descs:sub(0,-3)
+				end
+
+				button:SetText(option.displaystr or "...")
+				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
+				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+				button:SetFont(CHATFONT)
 			else
 				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
 				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
@@ -343,7 +387,10 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				widget.unbind:Hide()
 			end
 
-			if data.is_text_config or data.is_rgb_config or data.is_rgba_config or data.choices then
+			if data.is_text_config 
+			or data.is_rgb_config or data.is_rgba_config 
+			or data.choices 
+			or data.is_set_config or data.is_array_config or data.is_dictionary_config then
 				widget.revert:Show()
 			else
 				widget.revert:Hide()
@@ -370,6 +417,9 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 
 		local data = {
 			is_header = #option_item.options == 1 and option_item.options[1].description and option_item.options[1].description:len() == 0,
+			is_set_config = option_item.is_set_config,
+			is_array_config = option_item.is_array_config,
+			is_dictionary_config = option_item.is_dictionary_config,
 			choices = option_item.choices,
 			is_keybind = option_item.is_keybind,
 			is_text_config = option_item.is_text_config,
@@ -477,6 +527,12 @@ end
 function RemiNewModConfigurationScreen:GenericOptionCallback(option, option_button)
 	if option.is_keybind then
 		self:SetBind(option, option_button)
+	elseif option.is_set_config then
+		self:EditSet(option, option_button)
+	elseif option.is_array_config then
+		self:EditArray(option, option_button)
+	elseif option.is_dictionary_config then
+		self:EditDictionary(option, option_button)
 	elseif option.choices then
 		self:SetMultipleChoices(option, option_button)
 	elseif option.is_rgb_config or option.is_rgba_config then
@@ -490,10 +546,62 @@ function RemiNewModConfigurationScreen:GenericOptionCallback(option, option_butt
 	end
 end
 
+function RemiNewModConfigurationScreen:EditSet(option, option_button)
+	local popup
+	local buttons = {
+		{text = STRINGS.UI.MODSSCREEN.APPLY, cb = function() local descs, data = popup:CollectData(); self:OnComplexDataSet(option, option_button, descs, data); TheFrontEnd:PopScreen() end},
+		-- {text = STRINGS.UI.MODSSCREEN.BACK, cb = function() TheFrontEnd:PopScreen() end}, -- "back" button is gonna be added automatically
+	}
+
+	local list_options = {}
+	local counter = 0
+	for k in pairs(option.value) do
+		counter = counter + 1
+		list_options[counter] = {text = k, index = counter}
+	end
+
+	popup = ArrayEditScreen(list_options, option.label or option.name, option.hover or "--", buttons, nil, nil, true)
+	TheFrontEnd:PushScreen(popup)
+end
+
+function RemiNewModConfigurationScreen:EditArray(option, option_button)
+	local popup
+	local buttons = {
+		{text = STRINGS.UI.MODSSCREEN.APPLY, cb = function() local descs, data = popup:CollectData(); self:OnComplexDataSet(option, option_button, descs, data); TheFrontEnd:PopScreen() end},
+		-- {text = STRINGS.UI.MODSSCREEN.BACK, cb = function() TheFrontEnd:PopScreen() end}, -- "back" button is gonna be added automatically
+	}
+
+	local list_options = {}
+	for k,v in ipairs(option.value) do
+		list_options[k] = {text = v, index = k}
+	end
+
+	popup = ArrayEditScreen(list_options, option.label or option.name, option.hover or "--", buttons)
+	TheFrontEnd:PushScreen(popup)
+end
+
+function RemiNewModConfigurationScreen:EditDictionary(option, option_button)
+	local popup
+	local buttons = {
+		{text = STRINGS.UI.MODSSCREEN.APPLY, cb = function() local descs, data = popup:CollectData(); self:OnComplexDataSet(option, option_button, descs, data); TheFrontEnd:PopScreen() end},
+		-- {text = STRINGS.UI.MODSSCREEN.BACK, cb = function() TheFrontEnd:PopScreen() end}, -- "back" button is gonna be added automatically
+	}
+
+	local list_options = {}
+	local counter = 0
+	for k,v in pairs(option.value) do
+		counter = counter + 1
+		list_options[counter] = {key = k, value = v, index = counter}
+	end
+
+	popup = DictionaryEditScreen(list_options, option.label or option.name, option.hover or "--", buttons)
+	TheFrontEnd:PushScreen(popup)
+end
+
 function RemiNewModConfigurationScreen:SetMultipleChoices(option, option_button)
 	local popup
 	local buttons = {
-		{text = STRINGS.UI.MODSSCREEN.APPLY, cb = function() local descs, data = popup:CollectData(); self:OnMultipleChoicesSet(option, option_button, descs, data); TheFrontEnd:PopScreen() end},
+		{text = STRINGS.UI.MODSSCREEN.APPLY, cb = function() local descs, data = popup:CollectData(); self:OnComplexDataSet(option, option_button, descs, data); TheFrontEnd:PopScreen() end},
 		-- {text = STRINGS.UI.MODSSCREEN.BACK, cb = function() TheFrontEnd:PopScreen() end}, -- "back" button is gonna be added automatically
 	}
 
@@ -508,7 +616,7 @@ function RemiNewModConfigurationScreen:SetMultipleChoices(option, option_button)
 	TheFrontEnd:PushScreen(popup)
 end
 
-function RemiNewModConfigurationScreen:OnMultipleChoicesSet(option, option_button, descs, data)
+function RemiNewModConfigurationScreen:OnComplexDataSet(option, option_button, descs, data)
 	option.displaystr = descs
 	option.value = data
 	TheFrontEnd:GetSound():PlaySound("meta4/winona_remote/click", nil, .3)
@@ -557,11 +665,12 @@ function RemiNewModConfigurationScreen:SetInput(option, option_button)
 	popup.edit_text_label:SetPosition(-240,-110,0)
 
 	-- Add hover as body text
-	popup.body = popup.proot:AddChild(Text(CHATFONT, 22, option.hover or "--", UICOLOURS.WHITE))
+	popup.body = popup.proot:AddChild(Text(CHATFONT, 20, option.hover or "--", UICOLOURS.WHITE))
 	popup.body:EnableWordWrap(true)
 	popup.body:SetPosition(0, 70)
-	popup.body:SetRegionSize(600,280)
-	popup.body:SetVAlign(ANCHOR_MIDDLE)
+	popup.body:SetRegionSize(630,280)
+	--popup.body:SetVAlign(ANCHOR_MIDDLE)
+	--popup.body:SetHAlign(ANCHOR_LEFT)
 
 	TheFrontEnd:PushScreen(popup)
 	--popup.edit_text:SetEditing(true)
