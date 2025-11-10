@@ -99,21 +99,21 @@ local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, bod
 		edit_text:SetFocusedImage(item.edit_text_bg, "images/global_redux.xml", "textbox3_gold_normal.tex", "textbox3_gold_hover.tex", "textbox3_gold_focus.tex" )
 		edit_text:SetTextLengthLimit(200)
 		edit_text:SetForceEdit(true)
-		edit_text:SetTextPrompt("Your text here...", {0,0,0,.35})
+		edit_text:SetTextPrompt(STRINGS.BUTTONPICKER.EDIT_TEXT, {0,0,0,.35})
 		function edit_text.OnTextInputted(down)
 			if list_items[item.real_index] then list_items[item.real_index].text = edit_text:GetString() end
 		end
 		item.edit_text = edit_text
 
 		local moveupbtn = item.mutual_root:AddChild(ImageButton("images/ui.xml", "arrow2_up.tex", "arrow2_up_over.tex", nil, "arrow2_up_down.tex", nil, {.4,.4,.4}))
-		moveupbtn:SetHoverText("Move Up")
+		moveupbtn:SetHoverText(STRINGS.BUTTONPICKER.MOVEUP)
 		moveupbtn:SetPosition(150, 0)
 		moveupbtn:SetOnClick(function()
 			MoveUp(item, true)
 		end)
 		item.moveupbtn = moveupbtn
 		local movedownbtn = item.mutual_root:AddChild(ImageButton("images/ui.xml", "arrow2_down.tex", "arrow2_down_over.tex", nil, "arrow2_down_down.tex", nil, {.4,.4,.4}))
-		movedownbtn:SetHoverText("Move Down")
+		movedownbtn:SetHoverText(STRINGS.BUTTONPICKER.MOVEDOWN)
 		movedownbtn:SetPosition(180, 0)
 		movedownbtn:SetOnClick(function()
 			MoveDown(item, true)
@@ -123,7 +123,7 @@ local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, bod
 		local removebtn = item.root:AddChild(ImageButton(CRAFTING_ATLAS, "pinslot_unpin_button.tex", "pinslot_unpin_button.tex"))
 		removebtn:SetScale(.4,.4)
 		removebtn:SetPosition(210,0)
-		removebtn:SetHoverText("Remove")
+		removebtn:SetHoverText(STRINGS.BUTTONPICKER.REMOVE)
 		removebtn:SetOnClick(function()
 			list_items[item.real_index].removed = true
 			self.scroll_list:RefreshView()
@@ -139,7 +139,7 @@ local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, bod
 		local undoremovebtn = item.removed_root:AddChild(ImageButton("images/button_icons.xml", "undo.tex", "undo.tex"))
 		undoremovebtn:SetScale(.15,.15)
 		undoremovebtn:SetPosition(210,0)
-		undoremovebtn:SetHoverText("Undo")
+		undoremovebtn:SetHoverText(STRINGS.BUTTONPICKER.UNDOREMOVE)
 		undoremovebtn:SetOnClick(function()
 			list_items[item.real_index].removed = nil
 			self.scroll_list:RefreshView()
@@ -187,7 +187,7 @@ local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, bod
 		edit_text:SetFocusedImage(item.edit_text_bg, "images/global_redux.xml", "textbox3_gold_normal.tex", "textbox3_gold_hover.tex", "textbox3_gold_focus.tex" )
 		edit_text:SetTextLengthLimit(200)
 		edit_text:SetForceEdit(true)
-		edit_text:SetTextPrompt("Your text here...", {0,0,0,.35})
+		edit_text:SetTextPrompt(STRINGS.BUTTONPICKER.EDIT_TEXT, {0,0,0,.35})
 		function edit_text.OnTextInputted(down)
 			if list_items[item.real_index] then list_items[item.real_index].text = edit_text:GetString() end
 		end
@@ -211,7 +211,7 @@ local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, bod
 		local removebtn = item.root:AddChild(ImageButton(CRAFTING_ATLAS, "pinslot_unpin_button.tex", "pinslot_unpin_button.tex"))
 		removebtn:SetScale(.4,.4)
 		removebtn:SetPosition(210,0)
-		removebtn:SetHoverText("Remove")
+		removebtn:SetHoverText(STRINGS.BUTTONPICKER.REMOVE)
 		removebtn:SetOnClick(function()
 			list_items[item.real_index].removed = true
 			self.scroll_list:RefreshView()
@@ -227,7 +227,7 @@ local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, bod
 		local undoremovebtn = item.removed_root:AddChild(ImageButton("images/button_icons.xml", "undo.tex", "undo.tex"))
 		undoremovebtn:SetScale(.15,.15)
 		undoremovebtn:SetPosition(210,0)
-		undoremovebtn:SetHoverText("Undo")
+		undoremovebtn:SetHoverText(STRINGS.BUTTONPICKER.UNDOREMOVE)
 		undoremovebtn:SetOnClick(function()
 			list_items[item.real_index].removed = nil
 			self.scroll_list:RefreshView()
@@ -264,7 +264,7 @@ local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, bod
 
 			item.edit_text:SetString(data.text)
 			if data.text == "" then
-				item.removedlbl:SetString("- empty -")
+				item.removedlbl:SetString(STRINGS.BUTTONPICKER.EMPTY)
 				item.removedlbl:SetColour(1,.4,.4,1)
 			else
 				item.removedlbl:SetString(data.text)
@@ -295,7 +295,7 @@ local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, bod
 
 			item.edit_text:SetString(data.text)
 			if data.text == "" then
-				item.removedlbl:SetString("- empty -")
+				item.removedlbl:SetString(STRINGS.BUTTONPICKER.EMPTY)
 				item.removedlbl:SetColour(1,.4,.4,1)
 			else
 				item.removedlbl:SetString(data.text)
@@ -362,7 +362,7 @@ local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, bod
 	search_bar:SetPosition(-content_width*0.05, scroll_y+scroll_height/2+20)
 	search_bar:SetHAlign(ANCHOR_LEFT)
 	search_bar.prompt_color = {215/255, 210/255, 157/255, .55}
-	search_bar:SetTextPrompt("Search...", search_bar.prompt_color) -- UICOLOURS.GOLD_CLICKABLE but less alpha
+	search_bar:SetTextPrompt(STRINGS.BUTTONPICKER.SEARCH, search_bar.prompt_color) -- UICOLOURS.GOLD_CLICKABLE but less alpha
 	search_bar:SetIdleTextColour(UICOLOURS.GOLD_CLICKABLE)
 	search_bar:SetEditTextColour(UICOLOURS.WHITE)
 	search_bar:SetEditCursorColour(UICOLOURS.WHITE)
@@ -404,7 +404,7 @@ local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, bod
 	newentrybtn:SetPosition(210, scroll_y+scroll_height/2+20)
 	newentrybtn:ForceImageSize(item_height*1.5, item_height*1.5)
 	newentrybtn:SetText("+")
-	newentrybtn.image:SetHoverText("New Entry")
+	newentrybtn.image:SetHoverText(STRINGS.BUTTONPICKER.NEWENTRY)
 	newentrybtn:SetTextColour(UICOLOURS.GREY)
 	newentrybtn:SetTextFocusColour(UICOLOURS.WHITE)
 	newentrybtn:SetImageNormalColour(1,1,1,.7)

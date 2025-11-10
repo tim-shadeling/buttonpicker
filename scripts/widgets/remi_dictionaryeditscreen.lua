@@ -105,7 +105,7 @@ local DictionaryEditScreen = Class(Screen, function(self, list_items, title_text
 		edit_key:SetFocusedImage(item.edit_key_bg, "images/global_redux.xml", "textbox3_gold_normal.tex", "textbox3_gold_hover.tex", "textbox3_gold_focus.tex" )
 		edit_key:SetTextLengthLimit(200)
 		edit_key:SetForceEdit(true)
-		edit_key:SetTextPrompt("Key...", {0,0,0,.35})
+		edit_key:SetTextPrompt(STRINGS.BUTTONPICKER.EDIT_KEY, {0,0,0,.35})
 		function edit_key.OnTextInputted(down)
 			if list_items[item.real_index] then list_items[item.real_index].key = edit_key:GetString() end
 		end
@@ -124,7 +124,7 @@ local DictionaryEditScreen = Class(Screen, function(self, list_items, title_text
 		edit_value:SetFocusedImage(item.edit_value_bg, "images/global_redux.xml", "textbox3_gold_normal.tex", "textbox3_gold_hover.tex", "textbox3_gold_focus.tex" )
 		edit_value:SetTextLengthLimit(200)
 		edit_value:SetForceEdit(true)
-		edit_value:SetTextPrompt("Value...", {0,0,0,.35})
+		edit_value:SetTextPrompt(STRINGS.BUTTONPICKER.EDIT_VALUE, {0,0,0,.35})
 		function edit_value.OnTextInputted(down)
 			if list_items[item.real_index] then list_items[item.real_index].value = edit_value:GetString() end
 		end
@@ -148,7 +148,7 @@ local DictionaryEditScreen = Class(Screen, function(self, list_items, title_text
 		local removebtn = item.root:AddChild(ImageButton(CRAFTING_ATLAS, "pinslot_unpin_button.tex", "pinslot_unpin_button.tex"))
 		removebtn:SetScale(.4,.4)
 		removebtn:SetPosition(210,0)
-		removebtn:SetHoverText("Remove")
+		removebtn:SetHoverText(STRINGS.BUTTONPICKER.REMOVE)
 		removebtn:SetOnClick(function()
 			list_items[item.real_index].removed = true
 			self.scroll_list:RefreshView()
@@ -170,7 +170,7 @@ local DictionaryEditScreen = Class(Screen, function(self, list_items, title_text
 		local undoremovebtn = item.removed_root:AddChild(ImageButton("images/button_icons.xml", "undo.tex", "undo.tex"))
 		undoremovebtn:SetScale(.15,.15)
 		undoremovebtn:SetPosition(210,0)
-		undoremovebtn:SetHoverText("Undo")
+		undoremovebtn:SetHoverText(STRINGS.BUTTONPICKER.UNDOREMOVE)
 		undoremovebtn:SetOnClick(function()
 			list_items[item.real_index].removed = nil
 			self.scroll_list:RefreshView()
@@ -207,14 +207,14 @@ local DictionaryEditScreen = Class(Screen, function(self, list_items, title_text
 			item.edit_key:SetString(data.key)
 			item.edit_value:SetString(data.value)
 			if data.key == "" then
-				item.removedlbl_key:SetString("- empty -")
+				item.removedlbl_key:SetString(STRINGS.BUTTONPICKER.EMPTY)
 				item.removedlbl_key:SetColour(1,.4,.4,1)
 			else
 				item.removedlbl_key:SetString(data.key)
 				item.removedlbl_key:SetColour(1,1,1,1)
 			end
 			if data.value == "" then
-				item.removedlbl_value:SetString("- empty -")
+				item.removedlbl_value:SetString(STRINGS.BUTTONPICKER.EMPTY)
 				item.removedlbl_value:SetColour(1,.4,.4,1)
 			else
 				item.removedlbl_value:SetString(data.value)
@@ -281,7 +281,7 @@ local DictionaryEditScreen = Class(Screen, function(self, list_items, title_text
 	search_bar:SetPosition(-content_width*0.05, scroll_y+scroll_height/2+20)
 	search_bar:SetHAlign(ANCHOR_LEFT)
 	search_bar.prompt_color = {215/255, 210/255, 157/255, .55}
-	search_bar:SetTextPrompt("Search...", search_bar.prompt_color) -- UICOLOURS.GOLD_CLICKABLE but less alpha
+	search_bar:SetTextPrompt(STRINGS.BUTTONPICKER.SEARCH, search_bar.prompt_color) -- UICOLOURS.GOLD_CLICKABLE but less alpha
 	search_bar:SetIdleTextColour(UICOLOURS.GOLD_CLICKABLE)
 	search_bar:SetEditTextColour(UICOLOURS.WHITE)
 	search_bar:SetEditCursorColour(UICOLOURS.WHITE)
@@ -323,7 +323,7 @@ local DictionaryEditScreen = Class(Screen, function(self, list_items, title_text
 	newentrybtn:SetPosition(210, scroll_y+scroll_height/2+20)
 	newentrybtn:ForceImageSize(item_height*1.5, item_height*1.5)
 	newentrybtn:SetText("+")
-	newentrybtn.image:SetHoverText("New Entry")
+	newentrybtn.image:SetHoverText(STRINGS.BUTTONPICKER.NEWENTRY)
 	newentrybtn:SetTextColour(UICOLOURS.GREY)
 	newentrybtn:SetTextFocusColour(UICOLOURS.WHITE)
 	newentrybtn:SetImageNormalColour(1,1,1,.7)

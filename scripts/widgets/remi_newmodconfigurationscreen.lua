@@ -49,30 +49,6 @@ local function custom_equal(a,b)
 	return not custom_not_equal(a,b) -- wow
 end
 
-local lang = LanguageTranslator.defaultlang or "en"
-local languages =
-{
-    zh = "zh", -- Chinese for Steam
-    zhr = "zh", -- Chinese for WeGame
-    ch = "zh", -- Chinese mod
-    chs = "zh", -- Chinese mod
-    sc = "zh", -- simple Chinese
-    zht = "zh", -- traditional Chinese for Steam
-	tc = "zh", -- traditional Chinese
-	cht = "zh", -- Chinese mod
-}
-
-if languages[lang] ~= nil then
-    lang = languages[lang]
-else
-    lang = "en"
-end
-
-local chinese = lang == "zh"
-local VALUESTR = chinese and "选项值" or "Value:"
-local PRESS_A_BUTTON_STRING = chinese and "从下面的列表中按一个按钮！" or "Press a button from the list below!"
-local SEARCH_BAR_STRING = chinese and "搜索..." or "Search..."
-
 local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, client_config, callback)
 	Screen._ctor(self, "RemiNewModConfigurationScreen")
 
@@ -462,7 +438,7 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 	self.search_bar:SetPosition(0,self.options_scroll_list.visible_rows/2 * item_height + 14)
 	self.search_bar:SetHAlign(ANCHOR_LEFT)
 	self.search_bar.prompt_color = {215/255, 210/255, 157/255, .55}
-	self.search_bar:SetTextPrompt(SEARCH_BAR_STRING, self.search_bar.prompt_color) -- UICOLOURS.GOLD_CLICKABLE but less alpha
+	self.search_bar:SetTextPrompt(STRINGS.BUTTONPICKER.SEARCH, self.search_bar.prompt_color) -- UICOLOURS.GOLD_CLICKABLE but less alpha
 	self.search_bar:SetIdleTextColour(UICOLOURS.GOLD_CLICKABLE)
 	self.search_bar:SetEditTextColour(UICOLOURS.WHITE)
 	self.search_bar:SetEditCursorColour(UICOLOURS.WHITE)
@@ -661,7 +637,7 @@ function RemiNewModConfigurationScreen:SetInput(option, option_button)
 	popup.edit_text_bg:SetPosition(40,-110,0)
 
 	-- Add a little label before text edit
-	popup.edit_text_label = popup.proot:AddChild(Text(CHATFONT, 25, VALUESTR, UICOLOURS.WHITE))
+	popup.edit_text_label = popup.proot:AddChild(Text(CHATFONT, 25, STRINGS.BUTTONPICKER.VALUESTR, UICOLOURS.WHITE))
 	popup.edit_text_label:SetPosition(-240,-110,0)
 
 	-- Add hover as body text
@@ -728,7 +704,7 @@ function RemiNewModConfigurationScreen:SetBind(option, option_button)
 		if custom_equal(v.data, option.default) then default_key = checkdesc(v.description) end
 	end
 
-	local popup = ListOptionScreen(valid_options, option.label or option.name, PRESS_A_BUTTON_STRING.."\n"..string.format(STRINGS.UI.CONTROLSSCREEN.DEFAULT_CONTROL_TEXT, default_key), {}, nil, true)
+	local popup = ListOptionScreen(valid_options, option.label or option.name, STRINGS.BUTTONPICKER.PRESS_A_BUTTON.."\n"..string.format(STRINGS.UI.CONTROLSSCREEN.DEFAULT_CONTROL_TEXT, default_key), {}, nil, true)
 	popup.scroll_list.scroll_per_click = math.min(5, popup.scroll_list.items_per_view)
 
 	local oldoncontrol = popup.OnControl

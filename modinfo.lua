@@ -19,7 +19,7 @@ description = en_zh(
 	"Improves user experience when configurating mods and allows for different types of settings: keybinds, text inputs, color pickers, multiple choices...",
 	"在配置Mod时改善用户体验，并允许不同类型的设置: 快捷键绑定，文本输入，颜色选择，多项选择...")
 author = "Remi"
-version = "0.6"
+version = "0.6.1"
 
 forumthread = ""
 
@@ -281,7 +281,7 @@ en_configuration_options = {
 		options = {
 			{description = "Enable the mod!", data = {["torch"] = true, ["axe"] = true, ["backpack"] = true}}, -- make sure the data value has the same keys as the default, order doesn't matter
 		},
-		default = {["torch"] = true, ["axe"] = true, ["backpack"] = true}, 
+		default = {["torch"] = true, ["axe"] = true, ["backpack"] = true},
 	},
 
 	-- Array.
@@ -312,7 +312,7 @@ en_configuration_options = {
 		options = {
 			{description = "Enable the mod!", data = {"torch", "axe", "backpack"}}, -- make sure the data value matches the default, order matters too
 		},
-		default = {"torch", "axe", "backpack"}, 
+		default = {"torch", "axe", "backpack"},
 	},
 
 	-- Dictionary.
@@ -439,9 +439,9 @@ zh_configuration_options = {
 		name = "TEXT_EXAMPLE",
 		label = "文本输入示例",
 		options = {
-			{description = "请启用此Mod！", data = "any text here!"},
+			{description = "请启用此Mod！", data = "填写任何文字在这里！"},
 		},
-		default = "any text here!",
+		default = "填写任何文字在这里！",
 		--
 		hover = text_edit_hover, -- 此处为解释
 		--
@@ -478,7 +478,7 @@ zh_configuration_options = {
 	},
 
 	-- 多项选择
-	-- 这一个相比其他的有点棘手（并且它也很难实现）。
+	-- 这一个相比其它的有点棘手（并且它也很难实现）。
 	--
 	-- 要允许多个选项，你需要将所有实际选项移到 "choices" 中。
 	-- 在options中，您需要留下一个选项。
@@ -519,102 +519,93 @@ zh_configuration_options = {
 		default = {["AAA"] = true,["CCC"] = true,["EEE"] = true,}, -- 确保所有"键" 都有相应的选择
 	},
 
-	---------------------------------------------------------------------------------------
-	-- THIS SECTION IS NEW AND MACHINE-TRANSLATED. 本部分内容为新增内容，使用在线翻译器翻译而成。 --
-	---------------------------------------------------------------------------------------
-	-- 密钥列表.
-	-- 包含多个元素（均为字符串）。它可以用来选择PREFAB。
+	-- 键列表
+	-- 包含多个元素（均为字符串）。它可以用来选择Prefab
 	-- 这些字符串被收集到一个表中作为键： {string1 = true, string2 = true, ...}
 	{
-		-- 没什么特别的。
+		-- 这里没什么特别的
 		name = "SET_EXAMPLE",
-		label = "密钥列表示例",
-		hover = "列出你自己的钥匙清单。\n有 9 行空间可用于填写说明。!\n3\n4\n5\n6\n7\n8\n-- 9 --",
+		label = "键列表示例",
+		hover = "列出你自己的键列表。\n有 9 行空间可用于填写说明！\n3\n4\n5\n6\n7\n8\n-- 9 --",
 		--
 
-		-- 我们不给玩家提供任何“选择”。 他们可以输入任何他们想要的字符串。
-		-- 您需要添加这个:
+		-- 我们不给玩家提供任何 “选择” 他们可以输入任何他们想要的字符串。
+		-- 只需加上这个，让奇迹发生：
 		is_set_config = true,
 
 		-- 通过这种配置方式，玩家可以创建自定义字符串列表。
-		-- 这些字符串将被收集到一个表中，作为键： {string1 = true, string2 = true, ...}
+		-- 这些字符串将作为键被收集到一个表中： {string1 = true, string2 = true, ...}
 		-- 这就是 GetModConfigData 返回的值。
 
 		-- 例如，如果一个玩家列出如下清单:
 			-- true
 			-- {}
 			-- 3
-		-- 最终值将是 {["true"] = true, ["{}"] = true, ["3"] = true} -- 请注意，尽管看起来像是其他类型的值，但所有的键都是字符串。
+		-- 最终值将是 {["true"] = true, ["{}"] = true, ["3"] = true} -- 请注意，尽管看起来像是其它类型的值，但所有的键都是字符串。
 
-		-- 这里只能放一个选项，告诉玩家先启用扩展程序。
+		-- 在这里只放一个选项，告诉玩家先启用配置扩展模组
 		options = {
 			{description = "请启用此Mod！", data = {["torch"] = true, ["axe"] = true, ["backpack"] = true}}, -- 请确保这与默认值相同。
 		},
-		default = {["torch"] = true, ["axe"] = true, ["backpack"] = true}, 
+		default = {["torch"] = true, ["axe"] = true, ["backpack"] = true},
 	},
 
-	---------------------------------------------------------------------------------------
-	-- THIS SECTION IS NEW AND MACHINE-TRANSLATED. 本部分内容为新增内容，使用在线翻译器翻译而成。 --
-	---------------------------------------------------------------------------------------
-	-- 字符串值列表.
+	-- 值列表
 	-- 它与前一种类型类似，但是…
 	-- 这些字符串被收集到一个表中作为值： {"string1", "string2", ...}, 而且它们也是按顺序排列的
 	{
-		-- 没什么特别的。
+		-- 这里没什么特别的
 		name = "ARRAY_EXAMPLE",
-		label = "字符串值列表示例",
-		hover = "创建你自己的字符串列表。\n有 9 行空间可用于填写说明。!\n3\n4\n5\n6\n7\n8\n-- 9 --",
+		label = "值列表示例",
+		hover = "创建你自己的字符串列表。\n有 9 行空间可用于填写说明！\n3\n4\n5\n6\n7\n8\n-- 9 --",
 		--
 
-		-- 我们不给玩家提供任何“选择”。 他们可以输入任何他们想要的字符串。
-		-- 您需要添加这个:
+		-- 我们不给玩家提供任何 “选择” 他们可以输入任何他们想要的字符串。
+		-- 只需加上这个，让奇迹发生：
 		is_array_config = true,
 
 		-- 通过这种配置方式，玩家可以创建自定义字符串列表。
-		-- 这些字符串将被收集到一个表中，作为值而不是键： {"string 1", "string 2", ...}.
+		-- 这些字符串将被收集到一个表中，作为值而不是键： {"string 1", "string 2", ...}
 		-- 这就是 GetModConfigData 返回的值。
 
 		-- 例如，如果一个玩家列出如下清单:
 			-- true
 			-- {}
 			-- 3
-		-- 最终值将是 {"true", "{}", "3"} -- 请注意，尽管它们看起来像是其他类型的值，但所有值都是字符串。
+		-- 最终值将是 {"true", "{}", "3"} -- 请注意，尽管它们看起来像是其它类型的值，但所有值都是字符串。
 
-		-- 这里只能放一个选项，告诉玩家先启用扩展程序。
+		-- 在这里只放一个选项，告诉玩家先启用配置扩展模组
 		options = {
 			{description = "请启用此Mod！", data = {"torch", "axe", "backpack"}}, -- 请确保这与默认值相同。
 		},
-		default = {"torch", "axe", "backpack"}, 
+		default = {"torch", "axe", "backpack"},
 	},
 
-	---------------------------------------------------------------------------------------
-	-- THIS SECTION IS NEW AND MACHINE-TRANSLATED. 本部分内容为新增内容，使用在线翻译器翻译而成。 --
-	---------------------------------------------------------------------------------------
-	-- 键值对列表.
+	-- 键值对列表
 	-- 前两种类型的结合。
 	-- 在这个版本中，玩家可以输入自定义键和值: {["key1"] = "value1", ["key2"] = "value2", ...}, 它们都是字符串
 	{
-		-- 没什么特别的。
+		-- 这里没什么特别的
 		name = "DICTIONARY_EXAMPLE",
 		label = "键值对列表示例",
-		hover = "创建您自己的键值对列表!\n有 9 行空间可用于填写说明。!\n3\n4\n5\n6\n7\n8\n-- 9 --",
+		hover = "创建您自己的键值对列表！\n有 9 行空间可用于填写说明！\n3\n4\n5\n6\n7\n8\n-- 9 --",
 		--
 
-		-- 我们不给玩家提供任何“选择”。 他们可以输入任何他们想要的字符串。
-		-- 您需要添加这个:
+		-- 我们不给玩家提供任何 “选择” 他们可以输入任何他们想要的字符串。
+		-- 只需加上这个，让奇迹发生：
 		is_dictionary_config = true,
 
-		-- 通过这种配置，玩家可以创建自定义的字符串对列表。
-		-- 字符串对将按如下方式整理成表格： {["key1"] = "value1", ["key2"] = "value2", ...}.
+		-- 通过这种配置，玩家可以创建自定义的字符串键值对列表。
+		-- 这些字符串键值对将按如下方式整理成表： {["key1"] = "value1", ["key2"] = "value2", ...}
 		-- 这就是 GetModConfigData 返回的值。
 
 		-- 例如，如果一个玩家列出如下清单:
 			-- true = 5
 			-- {} = {}
 			-- 3 = 6
-		-- 最终值将是 {["true"] = "5", ["{}"] = "{}", ["3"] = "6"} -- 请注意，尽管它们看起来像是其他类型的值，但所有键和值都是字符串。
+		-- 最终值将是 {["true"] = "5", ["{}"] = "{}", ["3"] = "6"} -- 请注意，尽管它们看起来像是其它类型的值，但所有键和值都是字符串。
 
-		-- 这里只能放一个选项，告诉玩家先启用扩展程序。
+		-- 在这里只放一个选项，告诉玩家先启用配置扩展模组
 		options = {
 			{description = "请启用此Mod！", data = {["1"] = "torch", ["axe"] = "3", ["backpack"] = "2"}}, -- 它们都是字符串
 		},
