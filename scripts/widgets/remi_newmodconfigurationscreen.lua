@@ -93,8 +93,9 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 					is_rgb_config = v.is_rgb_config,
 					is_rgba_config = v.is_rgba_config,
 					is_keybind = is_keybind,
-					is_toggle = #v.options == 2 and type(v.options[1].data) == "boolean" and type(v.options[2].data) == "boolean" and v.options[1].data ~= v.options[2].data}
-				)
+					is_toggle = #v.options == 2 and type(v.options[1].data) == "boolean" and type(v.options[2].data) == "boolean" and v.options[1].data ~= v.options[2].data,
+					restricted = v.restricted,
+				})
 
 				-- Here if we detect an options that is keybind but has strings as data values, we'll have to use a different format
 				if not self.format and is_keybind and v.options[1] and type(v.options[1].data) == "string" then
@@ -530,13 +531,11 @@ function RemiNewModConfigurationScreen:EditSet(option, option_button)
 	}
 
 	local list_options = {}
-	local counter = 0
-	for k in pairs(option.value) do
-		counter = counter + 1
-		list_options[counter] = {text = k, index = counter}
-	end
+	for k in pairs(option.value) do table.insert(list_options, {text = k}) end
+	table.sort(list_options, function(a, b) return a.text < b.text end) -- first sort
+	for i,v in pairs(list_options) do v.index = i end -- THEN add indexes
 
-	popup = ArrayEditScreen(list_options, option.label or option.name, option.hover or "--", buttons, nil, nil, true)
+	popup = ArrayEditScreen(list_options, option.label or option.name, option.hover or "--", buttons, nil, nil, true, option.restricted)
 	TheFrontEnd:PushScreen(popup)
 end
 
@@ -552,7 +551,7 @@ function RemiNewModConfigurationScreen:EditArray(option, option_button)
 		list_options[k] = {text = v, index = k}
 	end
 
-	popup = ArrayEditScreen(list_options, option.label or option.name, option.hover or "--", buttons)
+	popup = ArrayEditScreen(list_options, option.label or option.name, option.hover or "--", buttons, nil, nil, false, option.restricted)
 	TheFrontEnd:PushScreen(popup)
 end
 
@@ -564,13 +563,11 @@ function RemiNewModConfigurationScreen:EditDictionary(option, option_button)
 	}
 
 	local list_options = {}
-	local counter = 0
-	for k,v in pairs(option.value) do
-		counter = counter + 1
-		list_options[counter] = {key = k, value = v, index = counter}
-	end
+	for k,v in pairs(option.value) do table.insert(list_options, {key = k, value = v}) end
+	table.sort(list_options, function(a, b) return a.key < b.key end) -- first sort
+	for i,v in pairs(list_options) do v.index = i end -- THEN add indexes
 
-	popup = DictionaryEditScreen(list_options, option.label or option.name, option.hover or "--", buttons)
+	popup = DictionaryEditScreen(list_options, option.label or option.name, option.hover or "--", buttons, nil, nil, option.restricted)
 	TheFrontEnd:PushScreen(popup)
 end
 

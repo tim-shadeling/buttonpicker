@@ -5,7 +5,7 @@ local TextEdit = require "widgets/textedit"
 local ImageButton = require "widgets/imagebutton"
 local TEMPLATES = require "widgets/redux/templates"
 
-local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, body_text, buttons, spacing, nohelpbutton, is_keylist)
+local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, body_text, buttons, spacing, nohelpbutton, is_keylist, restricted)
 	Screen._ctor(self, "RemiArrayEditScreen")
 
 	self.list_items = list_items
@@ -128,6 +128,10 @@ local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, bod
 			list_items[item.real_index].removed = true
 			self.scroll_list:RefreshView()
 		end)
+		if restricted then 
+			removebtn:Disable() 
+			removebtn:SetScale(0)
+		end
 		item.removebtn = removebtn
 
 		local removedlbl = item.removed_root:AddChild(Text(CHATFONT, 20, ""))
@@ -216,6 +220,10 @@ local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, bod
 			list_items[item.real_index].removed = true
 			self.scroll_list:RefreshView()
 		end)
+		if restricted then 
+			removebtn:Disable() 
+			removebtn:SetScale(0)
+		end
 		item.removebtn = removebtn
 
 		local removedlbl = item.removed_root:AddChild(Text(CHATFONT, 20, ""))
@@ -322,7 +330,7 @@ local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, bod
 				num_columns	  = 1,
 				item_ctor_fn = is_keylist and ScrollWidgetsCtor_KeyList or ScrollWidgetsCtor,
 				apply_fn	 = is_keylist and ScrollWidgetApply_KeyList or ScrollWidgetApply,
-				scrollbar_height_offset = -60
+				scrollbar_height_offset = -60,
 			}
 		))
 	local scroll_y = -80
@@ -418,6 +426,10 @@ local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, bod
 		self.scroll_list.end_pos = math.ceil(self.scroll_list.end_pos)
 		self.scroll_list:Scroll(self.items_amount)
 	end)
+	if restricted then 
+		newentrybtn:Disable() 
+		newentrybtn:Hide()
+	end
 	self.newentrybtn = newentrybtn
 
 	self.scroll_list:SetFocusChangeDir(MOVE_DOWN, self.dialog.actions)

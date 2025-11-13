@@ -5,7 +5,7 @@ local TextEdit = require "widgets/textedit"
 local ImageButton = require "widgets/imagebutton"
 local TEMPLATES = require "widgets/redux/templates"
 
-local DictionaryEditScreen = Class(Screen, function(self, list_items, title_text, body_text, buttons, spacing, nohelpbutton)
+local DictionaryEditScreen = Class(Screen, function(self, list_items, title_text, body_text, buttons, spacing, nohelpbutton, restricted)
 	Screen._ctor(self, "RemiDictionaryEditScreen")
 
 	self.list_items = list_items
@@ -95,6 +95,7 @@ local DictionaryEditScreen = Class(Screen, function(self, list_items, title_text
 		local edit_key_bg = item.root:AddChild(Image("images/global_redux.xml", "textbox3_gold_normal.tex"))
 		edit_key_bg:ScaleToSize(edit_text_width+10, item_height)
 		edit_key_bg:SetPosition(-edit_text_offset, 0)
+		if restricted then edit_key_bg:Hide() end
 		item.edit_key_bg = edit_key_bg
 
 		local edit_key = item.root:AddChild(TextEdit(CHATFONT, 20, ""))
@@ -108,6 +109,10 @@ local DictionaryEditScreen = Class(Screen, function(self, list_items, title_text
 		edit_key:SetTextPrompt(STRINGS.BUTTONPICKER.EDIT_KEY, {0,0,0,.35})
 		function edit_key.OnTextInputted(down)
 			if list_items[item.real_index] then list_items[item.real_index].key = edit_key:GetString() end
+		end
+		if restricted then 
+			edit_key:Disable() 
+			edit_key:SetColour(UICOLOURS.WHITE)
 		end
 		item.edit_key = edit_key
 
@@ -153,6 +158,10 @@ local DictionaryEditScreen = Class(Screen, function(self, list_items, title_text
 			list_items[item.real_index].removed = true
 			self.scroll_list:RefreshView()
 		end)
+		if restricted then 
+			removebtn:Disable() 
+			removebtn:SetScale(0) -- lmao
+		end
 		item.removebtn = removebtn
 
 		local removedlbl_key = item.removed_root:AddChild(Text(CHATFONT, 20, ""))
@@ -177,7 +186,7 @@ local DictionaryEditScreen = Class(Screen, function(self, list_items, title_text
 		end)
 		item.undoremovebtn = undoremovebtn
 
-		item.focus_forward = item.edit_key
+		item.focus_forward = restricted and edit_value or edit_key
 
 		item:SetOnGainFocus(function()
 			self.scroll_list:OnWidgetFocus(item)
@@ -243,22 +252,25 @@ local DictionaryEditScreen = Class(Screen, function(self, list_items, title_text
 				num_columns	  = 1,
 				item_ctor_fn = ScrollWidgetsCtor,
 				apply_fn	 = ScrollWidgetApply,
-				scrollbar_height_offset = -60
+				scrollbar_height_offset = -60,
 			}
 		))
 	local scroll_y = -80
 	self.scroll_list:SetPosition(0, scroll_y)
 
-	local old_onfocusmove = self.scroll_list.OnFocusMove
-	function self.scroll_list:OnFocusMove(dir, down)
-		if TheInput:IsKeyDown(KEY_CTRL) and (dir == MOVE_UP or dir == MOVE_DOWN) then
+	if not restricted then
+		local old_onfocusmove = self.scroll_list.OnFocusMove
+		function self.scroll_list:OnFocusMove(dir, down)
 			local focused_item = self.widgets_to_update[self.focused_widget_index]
-			if focused_item and focused_item.focus then
-				if dir == MOVE_UP then MoveUp(focused_item) else MoveDown(focused_item) end
+	
+			if (dir == MOVE_LEFT or dir == MOVE_RIGHT) then
+				focused_item[dir == MOVE_LEFT and "edit_key" or "edit_value"]:SetFocus()
+				for _, widget in pairs(self.widgets_to_update) do widget.focus_forward = (dir == MOVE_LEFT and widget.edit_key or widget.edit_value) end
+				return false
 			end
+	
+			return old_onfocusmove(self, dir, down)
 		end
-
-		return old_onfocusmove(self, dir, down)
 	end
 
 	if body_text then
@@ -337,6 +349,10 @@ local DictionaryEditScreen = Class(Screen, function(self, list_items, title_text
 		self.scroll_list.end_pos = math.ceil(self.scroll_list.end_pos)
 		self.scroll_list:Scroll(self.items_amount)
 	end)
+	if restricted then 
+		newentrybtn:Disable() 
+		newentrybtn:Hide()
+	end
 	self.newentrybtn = newentrybtn
 
 	self.scroll_list:SetFocusChangeDir(MOVE_DOWN, self.dialog.actions)
