@@ -5,7 +5,7 @@ local TextEdit = require "widgets/textedit"
 local ImageButton = require "widgets/imagebutton"
 local TEMPLATES = require "widgets/redux/templates"
 
-local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, body_text, buttons, spacing, nohelpbutton, is_keylist, restricted)
+local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, body_text, buttons, is_keylist, restricted)
 	Screen._ctor(self, "RemiArrayEditScreen")
 
 	self.list_items = list_items
@@ -13,38 +13,28 @@ local ArrayEditScreen = Class(Screen, function(self, list_items, title_text, bod
 	self.is_keylist = is_keylist
 
 	local scroll_height = 200
-	local body_height = 0
-	if body_text then
-		body_height = 100
-	end
+	local body_height = 100
 
 	self.black = self:AddChild(TEMPLATES.BackgroundTint())
 	self.proot = self:AddChild(TEMPLATES.ScreenRoot())
 
 	self.buttons = buttons or {}
+	table.insert(self.buttons, {
+		text=STRINGS.UI.HELP.BACK,
+		cb = function()
+			self:_Cancel()
+		end
+	})
 
-	if not nohelpbutton then
-		table.insert(self.buttons, {
-			text=STRINGS.UI.HELP.BACK,
-			cb = function()
-				self:_Cancel()
-			end,
-			controller_control = CONTROL_CANCEL,
-		})
-	end
-	self.dialog = self.proot:AddChild(TEMPLATES.CurlyWindow(460, scroll_height*2 + body_height,
-			title_text,
-			self.buttons,
-			spacing,
-			body_text or "" -- force creation of body to re-use sizing data
-		))
+	local bg_width = 460
+	self.dialog = self.proot:AddChild(TEMPLATES.CurlyWindow(bg_width, scroll_height*2 + body_height,
+		title_text,
+		self.buttons,
+		nil,
+		body_text or "" -- force creation of body to re-use sizing data
+	))
+
 	local content_width = 450 -- self.dialog.body:GetRegionSize()
-
-	self.oncontrol_fn, self.gethelptext_fn = TEMPLATES.ControllerFunctionsFromButtons(self.buttons)
-	if TheInput:ControllerAttached() then
-		self.dialog.actions:Hide()
-	end
-
 	local item_height = 40
 
 	local function MoveUp(item, move)
@@ -444,11 +434,10 @@ function ArrayEditScreen:OnControl(control, down)
 		return true
 	end
 
-	return self.oncontrol_fn(control, down)
-end
-
-function ArrayEditScreen:GetHelpText()
-	return self.gethelptext_fn()
+	if not down and control == CONTROL_CANCEL then
+		self:_Cancel()
+		return true
+	end
 end
 
 function ArrayEditScreen:_Cancel()

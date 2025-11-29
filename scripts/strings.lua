@@ -32,6 +32,14 @@ local strings = {
         SEARCH = "Search...",
         UNDOREMOVE = "Undo",
         VALUESTR = "Value:",
+        -- color picker
+        COLOR_NAMES = {"Red:", "Green:", "Blue:", "Alpha:"},
+        NEWCOLOR_LBL_STRING = "New:",
+        OLDCOLOR_LBL_STRING = "Old:",
+        SCROLL_INFO_STRING = "(textboxes are scrollable)",
+        -- new
+        OPENSECTION = ">> %d item%s <<", -- usage: string.format(>> %d item%s <<, section_size, section_size == 1 and "" or "s")
+        RETURN = "Return (Esc)",
     },
     zh = {
         EDIT_KEY = "键...",
@@ -46,6 +54,14 @@ local strings = {
         SEARCH = "搜索...",
         UNDOREMOVE = "撤销",
         VALUESTR = "选项值",
+        -- color picker 
+        COLOR_NAMES = {"红:", "绿:", "蓝:", "不透明度:"},
+        NEWCOLOR_LBL_STRING = "新:",
+        OLDCOLOR_LBL_STRING = "旧:",
+        SCROLL_INFO_STRING = "(文本框是可滚动的)",
+        -- NEW, MACHINE-TRANSLATED
+        OPENSECTION = ">> %d 种配置 <<",
+        RETURN = "回去 (Esc)",
     },
 }
 

@@ -1,17 +1,17 @@
 local function en_zh(en, zh)
-    local languages =
-    {
-        zh = "zh", -- Chinese for Steam
-        zhr = "zh", -- Chinese for WeGame
-        ch = "zh", -- Chinese mod
-        chs = "zh", -- Chinese mod
-        sc = "zh", -- simple Chinese
-        zht = "zh", -- traditional Chinese for Steam
-        tc = "zh", -- traditional Chinese
-        cht = "zh", -- Chinese mod
-    }
+	local languages =
+	{
+		zh = "zh", -- Chinese for Steam
+		zhr = "zh", -- Chinese for WeGame
+		ch = "zh", -- Chinese mod
+		chs = "zh", -- Chinese mod
+		sc = "zh", -- simple Chinese
+		zht = "zh", -- traditional Chinese for Steam
+		tc = "zh", -- traditional Chinese
+		cht = "zh", -- Chinese mod
+	}
 	local lang = languages[locale] or en
-    return lang == "zh" and zh or en
+	return lang == "zh" and zh or en
 end
 
 name = en_zh("Configs Extended","配置扩展")
@@ -19,7 +19,7 @@ description = en_zh(
 	"Improves user experience when configurating mods and allows for different types of settings: keybinds, text inputs, color pickers, multiple choices...",
 	"在配置Mod时改善用户体验，并允许不同类型的设置: 快捷键绑定，文本输入，颜色选择，多项选择...")
 author = "Remi"
-version = "0.6.2"
+version = "0.7"
 
 forumthread = ""
 
@@ -60,7 +60,7 @@ local Keys = {
 	{description = "A", data = 97},
 	{description = "B", data = 98},
 	{description = "C", data = 99},
-    {description = en_zh("Mouse 3","鼠标中键"), data = 1002},
+	{description = en_zh("Mouse 3","鼠标中键"), data = 1002},
 }
 
 local KeysFormat = {
@@ -79,11 +79,65 @@ local KeysFormat = {
 	{description = "A", data = "KEY_A"},
 	{description = "B", data = "KEY_B"},
 	{description = "C", data = "KEY_C"},
-    {description = en_zh("Mouse 3","鼠标中键"), data = "MOUSEBUTTON_MIDDLE"},
+	{description = en_zh("Mouse 3","鼠标中键"), data = "MOUSEBUTTON_MIDDLE"},
 }
+
+-- The new feature of version 0.7 is sections!
+-- You can now combine multiple configs into a section, and they will stay hidden until the user opens the section.
+-- This will be useful if you need to gather up a bunch of similar configs.
+
+-- How to add sections:
+-- You mark the beginning of a section by putting a header config, with "section_start = true" added to it.
+-- ALL CONFIGS below will be gathered into the section UNTIL another header with "section_start = true" appears. 
+-- In that case the current section will end, and that header will be part of a new section.
+
+-- I suggest using a function like this to add section start points:
+local section_counter = 0 -- This counter will ensure all section starting points will have unique names.
+local function AddSection(label, hover)
+	-- Bump the counter to ensure unique names.
+	section_counter = section_counter + 1
+	-- Return a fake config table:
+	-- There has to be a table for options with at least one option, otherwise the game will ignore the config completely.
+	-- Just put empty strings as values, no need to be excessive.
+	return {section_start = true, name = "SECTION_"..section_counter, label = label, hover = hover, options = {{description = "", data = ""}}, default = ""}
+end
+--[[ a version with no comments, for copying I guess
+
+local section_counter = 0
+local function AddSection(label, hover)
+	section_counter = section_counter + 1
+	return {section_start = true, name = "SECTION_"..section_counter, label = label, hover = hover, options = {{description = "", data = ""}}, default = ""}
+end
+
+--]]
+
+-- There's also "section_end = true", which you can use to close the current section WITHOUT starting a new one.
+-- You don't need a special function in this case, just slap it onto whatever config you need.
+-- NOTE: the config that had section_end will not be part of the section that was just closed.
+
+-- Hopefully, this example can make things a little clearer:
+--[[
+configuration_options = {
+	{some config...},					-- belongs to no section
+	{some config...},					-- belongs to no section
+	AddSection("section 1"), 			-- START of section 1, this belongs to no section
+	{some config...},					-- belongs to section 1
+	{some config...},					-- belongs to section 1
+	AddSection("section 2"), 			-- END of section 1, START of section 2, this belongs to no section
+	{some config...},					-- belongs to section 2
+	{some config, section_end = true},	-- END of section 2, this belongs to NO SECTION
+	{some config...},					-- belongs to no section
+	{some config, section_end = true},  -- belongs to no section still
+	AddSection("section 3"), 			-- section 3 starts, this belongs to no section
+	{some config...},					-- belongs to section 3
+	{some config...},					-- belongs to section 3
+}
+--]] 
 
 -- Now let's get to the different types of configs.
 en_configuration_options = {
+	AddSection("Actual Settings", ""),
+	AddSection("Config Examples", "Explore the different config type this mod provides!"),
 
 	-- Header.
 	-- This is a base game feature. You can make a config into a header by giving it exactly one option with an empty description.
@@ -99,23 +153,23 @@ en_configuration_options = {
 	-- List.
 	-- This is the default type of config.
 	{
-	    name = "LIST_EXAMPLE",
-	    label = "List Example",
-	    options = {
-	    	{description = "Option A",	data =  1, hover = "Hover text for the option A!"},
-	    	{description = "Option B",	data =  2, hover = "Hover text for the option B!"},
-	    	{description = "Option C",	data =  3, hover = "Hover text for the option C!"},
-	    	{description = "Option D",	data =  4, hover = "Hover text for the option D!"},
-	    	{description = "Option E",	data =  5, hover = "Hover text for the option E!"},
-	    	{description = "Option F",	data =  6, hover = "Hover text for the option F!"},
-	    	{description = "Option G",	data =  7, hover = "Hover text for the option G!"},
-	    	{description = "Option H",	data =  8, hover = "Hover text for the option H!"}, -- ←
-	    	{description = "Option I",	data =  9, hover = "Hover text for the option I!"},
-	    	{description = "Option J",	data = 10, hover = "Hover text for the option J!"},
-	    	{description = "Option K",	data = 11, hover = "Hover text for the option K!"},
-	    },
-	    default = 8, -- make sure there's an option that corresponds to this value
-	    hover = "Instead of scrolling through the options, pick from a list!",
+		name = "LIST_EXAMPLE",
+		label = "List Example",
+		options = {
+			{description = "Option A",	data =  1, hover = "Hover text for the option A!"},
+			{description = "Option B",	data =  2, hover = "Hover text for the option B!"},
+			{description = "Option C",	data =  3, hover = "Hover text for the option C!"},
+			{description = "Option D",	data =  4, hover = "Hover text for the option D!"},
+			{description = "Option E",	data =  5, hover = "Hover text for the option E!"},
+			{description = "Option F",	data =  6, hover = "Hover text for the option F!"},
+			{description = "Option G",	data =  7, hover = "Hover text for the option G!"},
+			{description = "Option H",	data =  8, hover = "Hover text for the option H!"}, -- ←
+			{description = "Option I",	data =  9, hover = "Hover text for the option I!"},
+			{description = "Option J",	data = 10, hover = "Hover text for the option J!"},
+			{description = "Option K",	data = 11, hover = "Hover text for the option K!"},
+		},
+		default = 8, -- make sure there's an option that corresponds to this value
+		hover = "Instead of scrolling through the options, pick from a list!",
 	},
 
 	-- Keybind.
@@ -126,25 +180,25 @@ en_configuration_options = {
 	-- You make a config into a keybind by adding "is_keybind = true," to its definition, as shown below.
 	-- The player is also able to unbind the action, setting the data value to -1. Your mod must be able to handle that case without crashing.
 	{
-	    name = "KEYBIND_EXAMPLE",
-	    label = "Keybind Example",
-	    options = Keys, -- it's a good idea to define keybind options and put it in a local variable, that way you won't have to copy-paste the whole table for every keybind config
-	    default = 97,
-	    hover = "Select a key directly. Feel the difference.",
-	    --
-	    is_keybind = true, -- this does the magic 
+		name = "KEYBIND_EXAMPLE",
+		label = "Keybind Example",
+		options = Keys, -- it's a good idea to define keybind options and put it in a local variable, that way you won't have to copy-paste the whole table for every keybind config
+		default = 97,
+		hover = "Select a key directly. Feel the difference.",
+		--
+		is_keybind = true, -- this does the magic 
 	},
 	-- A significant number of mods prefer to have their key data values as strings (defined in constants.lua) instead of the actual codes.
 	-- Unbound action is still going to be -1.
 	--
 	--[[ Choose one format and stick to it. You cannot use both at the same time, one of them will stop working.
 	{
-	    name = "KEYBIND_EXAMPLE_2",
-	    label = "Keybind Example 2",
-	    options = KeysFormat,
-	    default = "KEY_A",
-	    hover = "Select a key directly. Feel the difference.",
-	    is_keybind = true,
+		name = "KEYBIND_EXAMPLE_2",
+		label = "Keybind Example 2",
+		options = KeysFormat,
+		default = "KEY_A",
+		hover = "Select a key directly. Feel the difference.",
+		is_keybind = true,
 	},
 	--]]
 
@@ -152,14 +206,14 @@ en_configuration_options = {
 	-- Toggles only contains two options, with one representing true, and the other one - false.
 	-- The mod will make your config into a toggle automatically if the options meet the condition above.
 	{
-	    name = "TOGGLE_EXAMPLE",
-	    label = "Toggle Example",
-	    options = {
-	    	{description = "On", data = true, hover = "Yay!"},
-	    	{description = "Off", data = false, hover = "Nay!"},
-	    },
-	    default = true,
-	    hover = "Alternate between 2 options quickly.",
+		name = "TOGGLE_EXAMPLE",
+		label = "Toggle Example",
+		options = {
+			{description = "On", data = true, hover = "Yay!"},
+			{description = "Off", data = false, hover = "Nay!"},
+		},
+		default = true,
+		hover = "Alternate between 2 options quickly.",
 	},
 
 	-- Text inputs.
@@ -170,16 +224,16 @@ en_configuration_options = {
 	-- Please make sure to include a hover text contatining an explanation of what kind if input you are expecting from the player.
 	-- It would also not hurt to provide an example.
 	{
-	    name = "TEXT_EXAMPLE",
-	    label = "Text Input Example",
-	    options = {
-	    	{description = "Enable the mod!", data = "any text here!"},
-	    },
-	    default = "any text here!",
-	    --
-	    hover = text_edit_hover, -- explanation here
-	    --
-	    is_text_config = true, -- this does the magic
+		name = "TEXT_EXAMPLE",
+		label = "Text Input Example",
+		options = {
+			{description = "Enable the mod!", data = "any text here!"},
+		},
+		default = "any text here!",
+		--
+		hover = text_edit_hover, -- explanation here
+		--
+		is_text_config = true, -- this does the magic
 	},
 
 	-- Color.
@@ -190,25 +244,25 @@ en_configuration_options = {
 	-- The former will only let the player change the Red, Green and Blue color components, while the latter will allow the opacity level to be changed too.
 	-- Regardless of which type you use, the actual data value will always be a table of FOUR numbers ranging from 0 to 1.
 	{
-	    name = "RGB_EXAMPLE",
-	    label = "RGB Example",
-	    options = {
-	    	{description = "Enable the mod!", data = {1,1,1,1}}, -- make sure the data value matches the default
-	    },
-	    default = {1,1,1,1}, -- even though alpha is unchangeable, the table must still contain it (the 4th number)
-	    is_rgb_config = true,
-	    hover = "Pick any color!",
+		name = "RGB_EXAMPLE",
+		label = "RGB Example",
+		options = {
+			{description = "Enable the mod!", data = {1,1,1,1}}, -- make sure the data value matches the default
+		},
+		default = {1,1,1,1}, -- even though alpha is unchangeable, the table must still contain it (the 4th number)
+		is_rgb_config = true,
+		hover = "Pick any color!",
 	},
 	-- 
 	{
-	    name = "RGBA_EXAMPLE",
-	    label = "RGBA Example",
-	    options = {
-	    	{description = "Enable the mod!", data = {1,1,1,1}},
-	    },
-	    default = {1,1,1,1},
-	    is_rgba_config = true,
-	    hover = "Pick any color and opacity level!",
+		name = "RGBA_EXAMPLE",
+		label = "RGBA Example",
+		options = {
+			{description = "Enable the mod!", data = {1,1,1,1}},
+		},
+		default = {1,1,1,1},
+		is_rgba_config = true,
+		hover = "Pick any color and opacity level!",
 	},
 
 	-- Multiple choices.
