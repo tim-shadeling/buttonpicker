@@ -45,6 +45,23 @@ This feature originates from clearlove's Mod Config By Text.]],
 这个功能来源于clearlove的Mod: 文本模组配置]]
 )
 
+filler_counter = 0
+local function Filler(is_end)
+	filler_counter = filler_counter + 1
+	return {
+		name = "FILLER_"..filler_counter,
+		label = en_zh("Useless Config #", "无用的配置编号 ")..filler_counter,
+		options = {
+			{description = en_zh("Yes", "是"), data =   "no"},
+			{description =  en_zh("No", "不"), data =  "yes"},
+		},
+		default = "no",
+		--
+		section_end = is_end,
+		hover = is_end and en_zh("How did it break out??", "它是怎么逃出来的？") or ""
+	}
+end
+
 local Keys = {
 	{description = "F1", data = 282},
 	{description = "F2", data = 283},
@@ -82,16 +99,36 @@ local KeysFormat = {
 	{description = en_zh("Mouse 3","鼠标中键"), data = "MOUSEBUTTON_MIDDLE"},
 }
 
--- The new feature of version 0.7 is sections!
--- You can now combine multiple configs into a section, and they will stay hidden until the user opens the section.
--- This will be useful if you need to gather up a bunch of similar configs.
+-- Feature of 0.7: sections.
+-- Sections can be used to group up multiple configs or break all configs into parts.
 
--- How to add sections:
--- You mark the beginning of a section by putting a header config, with "section_start = true" added to it.
--- ALL CONFIGS below will be gathered into the section UNTIL another header with "section_start = true" appears. 
--- In that case the current section will end, and that header will be part of a new section.
+-- HOW DO IMPLEMENT:
+-- 1. Start a section by adding "section_start = true" to a header.
+-- 2. End a section by adding "section_end = true" to a config of any type.
+-- NOTE: that config won't be part of the section
+-- 2.1. You can close a section with "section_start = true" as well, and it will obviously start another section right after.
+-- And that's basically it. All configs between a section start and a section end (or 2 starts) will be grouped up and hidden until the user opens the section.
 
--- I suggest using a function like this to add section start points:
+-- Hopefully this example can help clear things up:
+--[[
+configuration_options = {
+	{some config...},					-- belongs to no section
+	{some config...},					-- belongs to no section
+	{header, section_start = true}, 	-- START of section 1, this belongs to no section, opens section 1 when clicked
+	{some config...},					-- belongs to section 1
+	{some config...},					-- belongs to section 1
+	{header, section_start = true}, 	-- END of section 1, START of section 2, this belongs to no section, opens section 2 when clicked
+	{some config...},					-- belongs to section 2
+	{some config, section_end = true},	-- END of section 2, this belongs to NO SECTION
+	{some config...},					-- belongs to no section
+	{some config, section_end = true},  -- belongs to no section still
+	{header, section_start = true}, 	-- section 3 starts, this belongs to no section
+	{some config...},					-- belongs to section 3
+	{some config...},					-- belongs to section 3
+}
+--]] 
+
+-- You could perhaps make a function like this to add section start points:
 local section_counter = 0 -- This counter will ensure all section starting points will have unique names.
 local function AddSection(label, hover)
 	-- Bump the counter to ensure unique names.
@@ -101,6 +138,7 @@ local function AddSection(label, hover)
 	-- Just put empty strings as values, no need to be excessive.
 	return {section_start = true, name = "SECTION_"..section_counter, label = label, hover = hover, options = {{description = "", data = ""}}, default = ""}
 end
+
 --[[ a version with no comments, for copying I guess
 
 local section_counter = 0
@@ -111,34 +149,8 @@ end
 
 --]]
 
--- There's also "section_end = true", which you can use to close the current section WITHOUT starting a new one.
--- You don't need a special function in this case, just slap it onto whatever config you need.
--- NOTE: the config that had section_end will not be part of the section that was just closed.
-
--- Hopefully, this example can make things a little clearer:
---[[
-configuration_options = {
-	{some config...},					-- belongs to no section
-	{some config...},					-- belongs to no section
-	AddSection("section 1"), 			-- START of section 1, this belongs to no section
-	{some config...},					-- belongs to section 1
-	{some config...},					-- belongs to section 1
-	AddSection("section 2"), 			-- END of section 1, START of section 2, this belongs to no section
-	{some config...},					-- belongs to section 2
-	{some config, section_end = true},	-- END of section 2, this belongs to NO SECTION
-	{some config...},					-- belongs to no section
-	{some config, section_end = true},  -- belongs to no section still
-	AddSection("section 3"), 			-- section 3 starts, this belongs to no section
-	{some config...},					-- belongs to section 3
-	{some config...},					-- belongs to section 3
-}
---]] 
-
 -- Now let's get to the different types of configs.
 en_configuration_options = {
-	AddSection("Actual Settings", ""),
-	AddSection("Config Examples", "Explore the different config type this mod provides!"),
-
 	-- Header.
 	-- This is a base game feature. You can make a config into a header by giving it exactly one option with an empty description.
 	{
@@ -399,12 +411,70 @@ en_configuration_options = {
 		},
 		default = {["1"] = "torch", ["axe"] = "3", ["backpack"] = "2"},
 	},
+
+	-- Just a tiny showcase of a section
+	AddSection("Section Example", "A whole section of settings that don't do anything at all!"),
+	Filler(), -- these
+	Filler(), -- will be hidden
+	Filler(), -- until
+	Filler(), -- the header is clicked
+	Filler(true),
 }
 
+---------------------------------- 以下文本为机器翻译。 ----------------------------------
+-- 0.7 版本新增功能：分区。
+-- 分区可用于将多个配置项分组，或将所有配置项拆分为多个部分。
+
+-- 实现方法：
+-- 1. 在标题中添加“section_start = true”即可开始一个分区。
+-- 2. 在任何类型的配置项中添加“section_end = true”即可结束一个分区。
+-- 注意：该配置项将不再属于当前分区。
+-- 2.1. 您也可以使用“section_start = true”来结束一个分区，显然，它会在之后立即开始另一个分区。
+-- 基本就是这样。分区开始和结束（或两个开始之间）的所有配置项将被分组并隐藏，直到用户打开该分区。
+
+-- 希望这个例子能有所帮助：
+--[[
+configuration_options = {
+	{一些配置...},					-- 不属于任何部分
+	{一些配置...},					-- 不属于任何部分
+	{标题, section_start = true}, 	-- 第 1 节开始, 不属于任何部分,点击后打开第 1 节。
+	{一些配置...},					-- 属于第 1 部分
+	{一些配置...},					-- 属于第 1 部分
+	{标题, section_start = true}, 	-- 第 1 节结束, 第 2 节开始, 不属于任何部分, 点击后打开第 2 节。
+	{一些配置...},					-- 属于第 2 部分
+	{一些配置, section_end = true},	-- 第 2 节结束, 不属于任何部分
+	{一些配置...},					-- 不属于任何部分
+	{一些配置, section_end = true},  -- 不属于任何部分
+	{标题, section_start = true}, 	-- 第 3 节开始, 不属于任何部分
+	{一些配置...},					-- 属于第 3 部分
+	{一些配置...},					-- 属于第 3 部分
+}
+--]] 
+
+-- 或许你可以创建一个类似这样的函数来添加章节起点：
+local section_counter = 0 -- 此计数器将确保所有章节的起始点都具有唯一名称。
+local function AddSection(label, hover)
+	-- 递增计数器以确保名称唯一。
+	section_counter = section_counter + 1
+	-- 返回一个虚拟配置表：
+	-- 必须存在一个包含至少一个选项的选项表，否则游戏将完全忽略该配置。
+	-- 只需将空字符串作为值即可，无需过多设置。
+	return {section_start = true, name = "SECTION_"..section_counter, label = label, hover = hover, options = {{description = "", data = ""}}, default = ""}
+end
+
+--[[ 这是一个没有注释的版本，大概是为了方便复制吧。
+
+local section_counter = 0
+local function AddSection(label, hover)
+	section_counter = section_counter + 1
+	return {section_start = true, name = "SECTION_"..section_counter, label = label, hover = hover, options = {{description = "", data = ""}}, default = ""}
+end
+
+--]]
+--------------------------------- 机器翻译文本到此结束。 ---------------------------------
 
 -- 现在，让我们了解不同类型的配置。
 zh_configuration_options = {
-
 	-- 标题
 	-- 这是一个基本的游戏功能。你可以通过给它一个选项和一个空的描述来把一个配置变成一个标题。
 	{
@@ -665,7 +735,16 @@ zh_configuration_options = {
 		},
 		default = {["1"] = "torch", ["axe"] = "3", ["backpack"] = "2"},
 	},
-}
 
+	---------------------------------- 以下文本为机器翻译。 ----------------------------------
+	-- 仅举一小段为例
+	AddSection("章节示例", "一组设置选项。它们根本不起作用！"),
+	Filler(), -- 点击章节标题后，此内容才会显示。
+	Filler(), -- 点击章节标题后，此内容才会显示。
+	Filler(), -- 点击章节标题后，此内容才会显示。
+	Filler(), -- 点击章节标题后，此内容才会显示。
+	Filler(true),
+	--------------------------------- 机器翻译文本到此结束。 ---------------------------------
+}
 
 configuration_options = en_zh(en_configuration_options, zh_configuration_options)

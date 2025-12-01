@@ -15,7 +15,7 @@ local RemiColorHelperScreen = Class(Screen, function(self, title, hover, buttons
 
 	self.dialog = self.proot:AddChild(TEMPLATES.CurlyWindow(400,450, title, buttons))
 
-	if hover then
+	if hover and hover ~= "" then
 		local info_hover = self.proot:AddChild(Text(BODYTEXTFONT, 25, "(i)"))
 		info_hover:SetPosition(0.5*400+25, 0.5*450+35)
 		info_hover:SetColour(UICOLOURS.GOLD_FOCUS)

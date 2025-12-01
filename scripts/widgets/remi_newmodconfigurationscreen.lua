@@ -187,7 +187,6 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 	section_back_btn:SetScale(.7)
 	section_back_btn:SetHoverText(STRINGS.BUTTONPICKER.RETURN)
 	section_back_btn:Hide()
-	rawset(_G, "section_back_btn", section_back_btn) -- TODO: remove
 	self.section_back_btn = section_back_btn
 
 	local function ScrollWidgetsCtor(context, idx)
@@ -214,7 +213,7 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 		widget.changed_image:SetPosition((item_width/2)-(spinner_width/2)-40+2, 0)
 		widget.changed_image:Hide()
 		widget.opt.UpdateAppearance = function(button)
-			local option = widget.opt.option
+			local option = button.option
 			if not option then return end
 
 			if custom_not_equal(option.value, option.initial_value) then
@@ -296,18 +295,19 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
 				button:SetFont(CHATFONT)
 			else
+				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
+				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+				button:SetFont(CHATFONT)
+				--
 				for k,v in ipairs(option.options) do
 					if custom_equal(v.data, option.value) then
 						button:SetText(checkdesc(v.description))
-						if option.is_font_config then button:SetFont(fontexists(v.data) or DEFAULTFONT) else button:SetFont(CHATFONT) end
+						if option.is_font_config then button:SetFont(fontexists(v.data) or DEFAULTFONT) end
 						return
 					end
 				end
 				--
 				button:SetText(option.is_keybind and type(option.value) == "number" and option.value <= 0 and STRINGS.UI.CONTROLSSCREEN.INPUTS[6][2] or "!!! "..STRINGS.UI.CONTROLSSCREEN.INVALID_CONTROL.." !!!")
-				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
-				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
-				button:SetFont(CHATFONT)
 			end
 		end
 
@@ -497,9 +497,6 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 		return oldoncontrol(self, control, down)
 	end
 	self.search_bar = search_bar
-
-	-- TODO: add a button that shows confugs in their original state -- without sections
-
 	self.default_focus = self.options_scroll_list
 	self:HookupFocusMoves()
 end)
@@ -538,7 +535,7 @@ function RemiNewModConfigurationScreen:SetSection(option, option_button)
 		self.options_scroll_list:SetItemsData(self.split_options)	
 	else
 		if next(option._section) == nil then 
-			-- TODO: play click negative sound
+			TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_negative")
 			return 
 		end
 		--
@@ -929,7 +926,7 @@ function RemiNewModConfigurationScreen:OnControl(control, down)
 end
 
 function RemiNewModConfigurationScreen:HookupFocusMoves()
-	-- TODO?
+	-- in the distant future?
 end
 
 return RemiNewModConfigurationScreen

@@ -35,7 +35,7 @@ local ListChoiceScreen = Class(Screen, function(self, list_items, title_text, bo
 	))
 	self.dialog.body:SetSize(20)
 
-	if hover then
+	if hover and hover ~= "" then
 		local info_hover = self.proot:AddChild(Text(BODYTEXTFONT, 25, "(i)"))
 		info_hover:SetPosition(0.5*bg_width+25, 0.5*(scroll_height+body_height)+35)
 		info_hover:SetColour(UICOLOURS.GOLD_FOCUS)
