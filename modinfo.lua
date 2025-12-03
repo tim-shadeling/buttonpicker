@@ -1,25 +1,13 @@
 local function en_zh(en, zh)
-	local languages =
-	{
-		zh = "zh", -- Chinese for Steam
-		zhr = "zh", -- Chinese for WeGame
-		ch = "zh", -- Chinese mod
-		chs = "zh", -- Chinese mod
-		sc = "zh", -- simple Chinese
-		zht = "zh", -- traditional Chinese for Steam
-		tc = "zh", -- traditional Chinese
-		cht = "zh", -- Chinese mod
-	}
-	local lang = languages[locale] or en
-	return lang == "zh" and zh or en
+    return locale ~= "zh" and locale ~= "zhr" and locale ~= "zht" and en or zh
 end
 
-name = en_zh("Configs Extended","配置扩展")
+name = en_zh("Configs Extended", "配置扩展")
 description = en_zh(
 	"Improves user experience when configurating mods and allows for different types of settings: keybinds, text inputs, color pickers, multiple choices...",
 	"在配置Mod时改善用户体验，并允许不同类型的设置: 快捷键绑定，文本输入，颜色选择，多项选择...")
 author = "Remi"
-version = "0.7"
+version = "0.7.1"
 
 forumthread = ""
 
@@ -45,20 +33,20 @@ This feature originates from clearlove's Mod Config By Text.]],
 这个功能来源于clearlove的Mod: 文本模组配置]]
 )
 
-filler_counter = 0
+local filler_counter = 0
 local function Filler(is_end)
 	filler_counter = filler_counter + 1
 	return {
 		name = "FILLER_"..filler_counter,
-		label = en_zh("Useless Config #", "无用的配置编号 ")..filler_counter,
+		label = en_zh("Useless Config #", "无用配置 ")..filler_counter,
 		options = {
-			{description = en_zh("Yes", "是"), data =   "no"},
-			{description =  en_zh("No", "不"), data =  "yes"},
+			{description = en_zh("Yes", "是"), data =  "no"},
+			{description =  en_zh("No", "否"), data =  "yes"},
 		},
 		default = "no",
 		--
 		section_end = is_end,
-		hover = is_end and en_zh("How did it break out??", "它是怎么逃出来的？") or ""
+		hover = is_end and en_zh("How did it break out??", "它是怎么跑出来的？？") or ""
 	}
 end
 
@@ -126,7 +114,7 @@ configuration_options = {
 	{some config...},					-- belongs to section 3
 	{some config...},					-- belongs to section 3
 }
---]] 
+--]]
 
 -- You could perhaps make a function like this to add section start points:
 local section_counter = 0 -- This counter will ensure all section starting points will have unique names.
@@ -421,44 +409,47 @@ en_configuration_options = {
 	Filler(true),
 }
 
----------------------------------- 以下文本为机器翻译。 ----------------------------------
+filler_counter = 0 -- Reset the counter so the numbering in the Chinese descriptions also starts from 1 (重置计数器使中文说明的计数也从1开始)
+
+--------------------------------------------------------- 以下部分为中文说明 ---------------------------------------------------------
+
 -- 0.7 版本新增功能：分区。
 -- 分区可用于将多个配置项分组，或将所有配置项拆分为多个部分。
 
 -- 实现方法：
--- 1. 在标题中添加“section_start = true”即可开始一个分区。
--- 2. 在任何类型的配置项中添加“section_end = true”即可结束一个分区。
--- 注意：该配置项将不再属于当前分区。
--- 2.1. 您也可以使用“section_start = true”来结束一个分区，显然，它会在之后立即开始另一个分区。
--- 基本就是这样。分区开始和结束（或两个开始之间）的所有配置项将被分组并隐藏，直到用户打开该分区。
+-- 1. 在标题中添加"section_start = true"即可开始一个分区。
+-- 2. 在任何类型的配置项中添加"section_end = true"即可结束一个分区。
+-- 注意：该配置项将不再属于这个分区。
+-- 2.1. 您也可以使用"section_start = true"来结束一个分区，显然，它会在之后立即开始另一个分区。
+-- 基本就是这样。分区起点和终点（或两个起点）之间的所有配置项将被分组并隐藏，直到用户打开该分区。
 
 -- 希望这个例子能有所帮助：
 --[[
 configuration_options = {
-	{一些配置...},					-- 不属于任何部分
-	{一些配置...},					-- 不属于任何部分
-	{标题, section_start = true}, 	-- 第 1 节开始, 不属于任何部分,点击后打开第 1 节。
-	{一些配置...},					-- 属于第 1 部分
-	{一些配置...},					-- 属于第 1 部分
-	{标题, section_start = true}, 	-- 第 1 节结束, 第 2 节开始, 不属于任何部分, 点击后打开第 2 节。
-	{一些配置...},					-- 属于第 2 部分
-	{一些配置, section_end = true},	-- 第 2 节结束, 不属于任何部分
-	{一些配置...},					-- 不属于任何部分
-	{一些配置, section_end = true},  -- 不属于任何部分
-	{标题, section_start = true}, 	-- 第 3 节开始, 不属于任何部分
-	{一些配置...},					-- 属于第 3 部分
-	{一些配置...},					-- 属于第 3 部分
+	{一些配置...},					-- 不属于任何分区
+	{一些配置...},					-- 不属于任何分区
+	{标题, section_start = true},	-- 分区1开始；此项本身不属于任何分区，点击后展开分区1
+	{一些配置...},					-- 属于分区1
+	{一些配置...},					-- 属于分区1
+	{标题, section_start = true}, 	-- 分区1结束，分区2开始；此项不属于任何分区，点击后展开分区2
+	{一些配置...},					-- 属于分区2
+	{一些配置, section_end = true},	-- 分区2结束；此项不属于任何分区
+	{一些配置...},					-- 不属于任何分区
+	{一些配置, section_end = true},  -- 不属于任何分区
+	{标题, section_start = true}, 	-- 分区3开始；此项不属于任何分区
+	{一些配置...},					-- 属于分区3
+	{一些配置...},					-- 属于分区3
 }
---]] 
+--]]
 
--- 或许你可以创建一个类似这样的函数来添加章节起点：
-local section_counter = 0 -- 此计数器将确保所有章节的起始点都具有唯一名称。
+-- 或许你可以创建一个类似这样的函数来添加分区起点：
+local section_counter = 0 -- 此计数器将确保所有分区的起始点都具有唯一名称。
 local function AddSection(label, hover)
 	-- 递增计数器以确保名称唯一。
 	section_counter = section_counter + 1
 	-- 返回一个虚拟配置表：
-	-- 必须存在一个包含至少一个选项的选项表，否则游戏将完全忽略该配置。
-	-- 只需将空字符串作为值即可，无需过多设置。
+	-- 对于 options，必须至少有一个选项，否则游戏会完全忽略该配置。
+	-- 只需放入空字符串作为值即可，无需写太多内容。
 	return {section_start = true, name = "SECTION_"..section_counter, label = label, hover = hover, options = {{description = "", data = ""}}, default = ""}
 end
 
@@ -471,7 +462,6 @@ local function AddSection(label, hover)
 end
 
 --]]
---------------------------------- 机器翻译文本到此结束。 ---------------------------------
 
 -- 现在，让我们了解不同类型的配置。
 zh_configuration_options = {
@@ -736,15 +726,13 @@ zh_configuration_options = {
 		default = {["1"] = "torch", ["axe"] = "3", ["backpack"] = "2"},
 	},
 
-	---------------------------------- 以下文本为机器翻译。 ----------------------------------
-	-- 仅举一小段为例
-	AddSection("章节示例", "一组设置选项。它们根本不起作用！"),
-	Filler(), -- 点击章节标题后，此内容才会显示。
-	Filler(), -- 点击章节标题后，此内容才会显示。
-	Filler(), -- 点击章节标题后，此内容才会显示。
-	Filler(), -- 点击章节标题后，此内容才会显示。
+	-- 一个关于分区的小示例
+	AddSection("分区示例", "一个没有任何作用的设置分区！"),
+	Filler(), -- 这些将会被隐藏，直到点击标题时
+	Filler(), -- 这些将会被隐藏，直到点击标题时
+	Filler(), -- 这些将会被隐藏，直到点击标题时
+	Filler(), -- 这些将会被隐藏，直到点击标题时
 	Filler(true),
-	--------------------------------- 机器翻译文本到此结束。 ---------------------------------
 }
 
 configuration_options = en_zh(en_configuration_options, zh_configuration_options)
