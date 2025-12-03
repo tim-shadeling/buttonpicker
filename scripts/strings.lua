@@ -53,15 +53,15 @@ local strings = {
         REMOVE = "删除",
         SEARCH = "搜索...",
         UNDOREMOVE = "撤销",
-        VALUESTR = "选项值",
-        -- color picker 
+        VALUESTR = "选项值:",
+        -- 颜色选择
         COLOR_NAMES = {"红:", "绿:", "蓝:", "不透明度:"},
         NEWCOLOR_LBL_STRING = "新:",
         OLDCOLOR_LBL_STRING = "旧:",
         SCROLL_INFO_STRING = "(文本框是可滚动的)",
-        -- NEW, MACHINE-TRANSLATED
-        OPENSECTION = ">> %d 种配置 <<",
-        RETURN = "回去 (Esc)",
+        -- 新内容
+        OPENSECTION = ">> %d 个配置 <<",
+        RETURN = "返回 (Esc)",
     },
 }
 
