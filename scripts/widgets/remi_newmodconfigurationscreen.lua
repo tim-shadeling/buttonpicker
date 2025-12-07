@@ -879,7 +879,9 @@ function RemiNewModConfigurationScreen:ConfirmRevert(callback)
 end
 
 function RemiNewModConfigurationScreen:Cancel()
-	if self:IsDirty() and not (self.started_default and self:IsDefaultSettings()) then
+	if self.section_opened then
+		self:SetSection()
+	elseif self:IsDirty() and not (self.started_default and self:IsDefaultSettings()) then
 		self:ConfirmRevert(function()
 			self:MakeDirty(false)
 			TheFrontEnd:PopScreen()
