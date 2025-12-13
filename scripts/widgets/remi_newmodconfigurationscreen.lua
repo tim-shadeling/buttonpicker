@@ -124,7 +124,7 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 	self.split_options = BreakIntoSections(self.options)
 	self.started_default = self:IsDefaultSettings()
 	self.dirty = false
-	self.section_opened = false
+	self.pre_section_scroll_pos = nil -- if it's a number then it means a section is opened
 
 	self.black = self:AddChild(TEMPLATES.BackgroundTint())
 	self.root = self:AddChild(TEMPLATES.ScreenRoot())
@@ -521,29 +521,32 @@ function RemiNewModConfigurationScreen:FilterConfigs()
 		filtered_configs = self.split_options
 	end
 	--
-	self.section_opened = false
 	self.title:Reset()
-	self.section_back_btn:Hide() -- not exactly its purpose but it'll work fine
+	self.section_back_btn:Hide()
 	self.options_scroll_list:SetItemsData(filtered_configs)
+	self.options_scroll_list:ScrollToScrollPos(1)
+	self.pre_section_scroll_pos = nil
 end
 
 function RemiNewModConfigurationScreen:SetSection(option, option_button)
 	if option == nil then
-		self.section_opened = false
 		self.title:Reset()
 		self.section_back_btn:Hide()
 		self.options_scroll_list:SetItemsData(self.split_options)	
+		self.options_scroll_list:ScrollToScrollPos(self.pre_section_scroll_pos)	
+		self.pre_section_scroll_pos = nil
 	else
 		if next(option._section) == nil then 
 			TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_negative")
 			return 
 		end
 		--
-		self.section_opened = true
 		self.title:SetColour(UICOLOURS.WHITE)
 		self.title:SetString(option.label)
 		self.section_back_btn:Show()
+		self.pre_section_scroll_pos = self.options_scroll_list.current_scroll_pos
 		self.options_scroll_list:SetItemsData(option._section)
+		self.options_scroll_list:ScrollToScrollPos(1)
 	end
 end
 
@@ -879,7 +882,7 @@ function RemiNewModConfigurationScreen:ConfirmRevert(callback)
 end
 
 function RemiNewModConfigurationScreen:Cancel()
-	if self.section_opened then
+	if self.pre_section_scroll_pos then
 		self:SetSection()
 	elseif self:IsDirty() and not (self.started_default and self:IsDefaultSettings()) then
 		self:ConfirmRevert(function()
@@ -921,7 +924,7 @@ function RemiNewModConfigurationScreen:OnControl(control, down)
 
 	if not down then
 		if control == CONTROL_CANCEL then
-			if self.section_opened then self:SetSection() else self:Cancel() end
+			if self.pre_section_scroll_pos then self:SetSection() else self:Cancel() end
 			return true
 		end
 	end
