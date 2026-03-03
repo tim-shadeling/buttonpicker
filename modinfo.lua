@@ -7,7 +7,7 @@ description = en_zh(
 	"Improves user experience when configurating mods and allows for different types of settings: keybinds, text inputs, color pickers, multiple choices...",
 	"在配置Mod时改善用户体验，并允许不同类型的设置: 快捷键绑定，文本输入，颜色选择，多项选择...")
 author = "Remi"
-version = "0.7.2"
+version = "0.8"
 
 forumthread = ""
 
@@ -90,7 +90,7 @@ local KeysFormat = {
 -- Feature of 0.7: sections.
 -- Sections can be used to group up multiple configs or break all configs into parts.
 
--- HOW DO IMPLEMENT:
+-- HOW TO IMPLEMENT:
 -- 1. Start a section by adding "section_start = true" to a header.
 -- 2. End a section by adding "section_end = true" to a config of any type.
 -- NOTE: that config won't be part of the section
@@ -137,8 +137,62 @@ end
 
 --]]
 
+-- Feature of 0.8: quick presets
+-- Quick presets allow modders to change multiple configs in a predetermined way.
+-- If a mod has presets defined, the button that resets configs to default will instead open a menu listing all presets.
+
+-- Defining presets is rather easy:
+--
+-- presets = { -- normally you would do this...
+local en_presets = { -- however in this file I have to provide both English and Chinese variants, so I'll do 2 local variables, and assign one of them at the bottom of this file
+	{ -- begin a new preset
+		name = "All* first", -- give it a name using the "name" field
+		hover = "Sets configs to the first option, where possible.", -- explain briefly what the preset does using the "hover" field
+		values = { -- provide values using the "values" (duh) field
+			["LIST_EXAMPLE"] = 1, -- NAME OF CONFIG = DATA VALUE
+			["KEYBIND_EXAMPLE"] = 282,
+			["TOGGLE_EXAMPLE"] = true, -- PLEASE be very careful and don't supply a value of incorrect type by accident!
+		--	["TEXT_EXAMPLE"] = "???", -- this config doesn't have a "first option", so it's not included
+		--	["RGB_EXAMPLE"] = "{1,1,1,1}" -- same thing here
+		--	["RGBA_EXAMPLE"] = {1,1,1,1}" -- and here
+			["MULTIPLE_CHOICES_EXAMPLE"] = {["AAA"] = true}, -- don't forget it's a multiple choices config
+		--	["SET_EXAMPLE"] = {}, -- no "first option"
+		--	["ARRAY_EXAMPLE"] = {}, -- no "first option"
+		--	["DICTIONARY_EXAMPLE"] = {}, -- no "first option"
+		--	we'll add fillers in a more clever way rather than listing them one by one, look not too far below
+		},
+	},
+
+	-- A similar example with no comments:
+	{
+		name = "All* second", 
+		hover = "Sets configs to the second option, where possible.",
+		values = {
+			["LIST_EXAMPLE"] = 2,
+			["KEYBIND_EXAMPLE"] = 283,
+			["TOGGLE_EXAMPLE"] = false,
+			["MULTIPLE_CHOICES_EXAMPLE"] = {["BBB"] = true},
+		},
+	},
+
+	-- and so on...
+}
+
+-- Including fillers to the presets
+for i = 1, 5 do -- well, we know there's 5 of them
+	en_presets[1].values["FILLER_"..i] = "no"
+	en_presets[2].values["FILLER_"..i] = "yes"
+end
+
+-- IMPORTANT:
+-- 1. Any configs missing in the preset's "values" field will not be affected by the preset.
+-- 2. Please be very careful with value types! Supplying a worng-typed value will likely lead to crashes.
+-- 3. You do not need to create an "all default" preset. It will be added automatically.
+-- 4. RGB configs return a table of FOUR (not three) elements (red, green, blue, and opacity, opacity equals 1).
+-- 5. A preset providing a value for a non-existent config should not cause issues.
+
 -- Now let's get to the different types of configs.
-en_configuration_options = {
+local en_configuration_options = {
 	-- Header.
 	-- This is a base game feature. You can make a config into a header by giving it exactly one option with an empty description.
 	{
@@ -463,6 +517,61 @@ end
 
 --]]
 
+-- NEW, machine-translated/以下部分为新增内容，由机器翻译。
+-- 0.8 版本新增功能：快速预设
+-- 快速预设功能允许模组制作者以预定的方式更改多个配置。
+-- 如果 MOD 定义了预设，则将配置重置为默认值的按钮将打开一个菜单，列出所有预设。
+
+-- 定义预设并不难：
+--
+-- presets = { -- 你通常可以这样做
+local zh_presets = { -- 但是，在这个文件中我还需要提供一个英文版本，所以我将创建两个局部变量，并在文件末尾使用其中一个。
+	{ -- 开始一个新的预设
+		name = "一切*到第一", -- 使用 name 字段为其命名
+		hover = "尽可能选择第一个选项。", -- 简要说明预设值在 hover 字段中的作用。
+		values = { -- 请使用 values 字段提供值。
+			["LIST_EXAMPLE"] = 1, -- 配置名称 = 数据值
+			["KEYBIND_EXAMPLE"] = 282,
+			["TOGGLE_EXAMPLE"] = true,
+		--	["TEXT_EXAMPLE"] = "???", -- 这个没有“选项 1”。
+		--	["RGB_EXAMPLE"] = "{1,1,1,1}" -- 这个没有“选项 1”。
+		--	["RGBA_EXAMPLE"] = {1,1,1,1}" -- 这个没有“选项 1”。
+			["MULTIPLE_CHOICES_EXAMPLE"] = {["AAA"] = true}, -- 这是一个多项选择题设置
+		--	["SET_EXAMPLE"] = {}, -- 这个没有“选项 1”。
+		--	["ARRAY_EXAMPLE"] = {}, -- 这个没有“选项 1”。
+		--	["DICTIONARY_EXAMPLE"] = {}, -- 这个没有“选项 1”。
+		--	我们将以更巧妙的方式添加填充词，而不是逐一列出，请向下看不远。
+		},
+	},
+
+	-- 一个类似的例子，但没有评论：
+	{
+		name = "一切*到第二", 
+		hover = "尽可能选择第二个选项。",
+		values = {
+			["LIST_EXAMPLE"] = 2,
+			["KEYBIND_EXAMPLE"] = 283,
+			["TOGGLE_EXAMPLE"] = false,
+			["MULTIPLE_CHOICES_EXAMPLE"] = {["BBB"] = true},
+		},
+	},
+
+	-- 你可以设置任意数量的预设...
+}
+
+-- 在预设中包含填充词
+for i = 1, 5 do -- 我们已经知道他们有5个。
+	zh_presets[1].values["FILLER_"..i] = "no"
+	zh_presets[2].values["FILLER_"..i] = "yes"
+end
+
+-- 重要提示：
+-- 1. 预设的 values 字段中缺失的任何配置都不会受到预设的影响。
+-- 2. 请务必注意值类型！提供错误类型的值可能会导致程序崩溃。
+-- 3. 您无需创建“全部默认值”预设。它会自动添加。
+-- 4. RGB 配置返回一个包含四个元素（而非三个）的表格（红色、绿色、蓝色和不透明度，不透明度等于 1）。
+-- 5. 预设为不存在的配置提供值不应导致问题。
+
 -- 现在，让我们了解不同类型的配置。
 zh_configuration_options = {
 	-- 标题
@@ -736,3 +845,4 @@ zh_configuration_options = {
 }
 
 configuration_options = en_zh(en_configuration_options, zh_configuration_options)
+presets = en_zh(en_presets, zh_presets)

@@ -7,12 +7,10 @@ local TextEdit = require "widgets/textedit"
 
 local RemiColorHelperScreen = Class(Screen, function(self, title, hover, buttons, initial_color, include_alpha)
 	Screen._ctor(self, "RemiColorHelperScreen")
+
 	self.tint = self:AddChild(TEMPLATES.BackgroundTint())
-
-	self.proot = self:AddChild(Widget("proot"))
-	self.proot:SetVAnchor(0)
-	self.proot:SetHAnchor(0)
-
+	self.proot = self:AddChild(TEMPLATES.ScreenRoot())
+	
 	self.dialog = self.proot:AddChild(TEMPLATES.CurlyWindow(400,450, title, buttons))
 
 	if hover and hover ~= "" then

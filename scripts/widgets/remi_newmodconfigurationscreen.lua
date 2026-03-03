@@ -126,6 +126,8 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 	self.dirty = false
 	self.pre_section_scroll_pos = nil -- if it's a number then it means a section is opened
 
+	self.quickpresets = modinfo.presets or modinfo.quickpresets
+
 	self.black = self:AddChild(TEMPLATES.BackgroundTint())
 	self.root = self:AddChild(TEMPLATES.ScreenRoot())
 
@@ -133,10 +135,11 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 	local spinner_width = 225
 	local item_width, item_height = label_width + spinner_width + 70, 40
 
+	local presetsexist = type(self.quickpresets) == "table" and next(self.quickpresets) ~= nil
 	local buttons = {
-		{ text = STRINGS.UI.MODSSCREEN.APPLY,			cb = function() self:Apply() end,				},
-		{ text = STRINGS.UI.MODSSCREEN.RESETDEFAULT, 	cb = function() self:ResetToDefaultValues() end,},
-		{ text = STRINGS.UI.MODSSCREEN.BACK,		 	cb = function() self:Cancel() end,				},
+		{text = STRINGS.UI.MODSSCREEN.APPLY, cb = function() self:Apply() end,},
+		{text = presetsexist and STRINGS.BUTTONPICKER.QUICKPRESETS or STRINGS.UI.MODSSCREEN.RESETDEFAULT, cb = function() return presetsexist and self:OpenPresetsMenu() or self:ResetToDefaultValues() end,}, -- OpenPresetsMenu returns a true-y value so it's fine
+		{text = STRINGS.UI.MODSSCREEN.BACK, cb = function() self:Cancel() end,},
 	}
 
 	self.dialog = self.root:AddChild(TEMPLATES.RectangleWindow(item_width + 60, 580, nil, buttons))
@@ -816,7 +819,41 @@ function RemiNewModConfigurationScreen:OnBindSet(option, option_button, input)
 	end
 end
 
-function RemiNewModConfigurationScreen:ResetToDefaultValues()
+function RemiNewModConfigurationScreen:OpenPresetsMenu()
+	local list_options = {}
+	-- all defaults preset goes first
+	list_options[1] = {text = STRINGS.BUTTONPICKER.RESETTODEFAULT, hover = STRINGS.BUTTONPICKER.RESETTODEFAULT_HOVER, onclick = function() self:ResetToDefaultValues(true); TheFrontEnd:PopScreen() end}
+	local amount_options = 1
+
+	for k, preset in ipairs(self.quickpresets) do
+		list_options[k+1] = {text = preset.name or "MISSING NAME", hover = preset.hover, onclick = function() self:ApplyQuickPreset(preset); self:MakeDirty(); TheFrontEnd:PopScreen() end}
+		amount_options = amount_options + 1 -- k+1
+	end
+
+	local popup = ListOptionScreen(list_options, STRINGS.BUTTONPICKER.QUICKPRESETS, "", nil, nil, false, false, true) -- new parameter, aligns option names to center instead of left
+	popup.scroll_list.scroll_per_click = math.clamp(1+math.floor(amount_options/30), 1, 5)
+	TheFrontEnd:PushScreen(popup)
+
+	return true -- absolutely necessary
+end
+
+function RemiNewModConfigurationScreen:ApplyQuickPreset(preset)
+	if type(preset.values) ~= "table" then return end
+	for i,v in ipairs(self.options) do
+		local newvalue = preset.values[v.name]
+		if newvalue ~= nil then 
+			v.value = shallowcopy(newvalue)
+			v.displaystr = nil
+		end
+	end
+
+	for k,v in ipairs(self.options_scroll_list.widgets_to_update) do v.opt:UpdateAppearance() end
+	self.value_description:SetString("")
+
+	TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/repair_clothing", nil, .4)
+end
+
+function RemiNewModConfigurationScreen:ResetToDefaultValues(direct)
 	local function reset()
 		for i,v in ipairs(self.options) do
 			v.value = shallowcopy(v.default)
@@ -828,7 +865,11 @@ function RemiNewModConfigurationScreen:ResetToDefaultValues()
 		self.value_description:SetString("")
 	end
 
-	if not self:IsDefaultSettings() then
+	if direct then
+		self:MakeDirty()
+		reset()
+		TheFrontEnd:GetSound():PlaySound("wilson_rework/ui/respec", nil, .6)
+	elseif not self:IsDefaultSettings() then
 		self:ConfirmRevert(function()
 			TheFrontEnd:PopScreen()
 			self:MakeDirty()

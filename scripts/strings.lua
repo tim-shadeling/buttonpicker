@@ -37,9 +37,13 @@ local strings = {
         NEWCOLOR_LBL_STRING = "New:",
         OLDCOLOR_LBL_STRING = "Old:",
         SCROLL_INFO_STRING = "(textboxes are scrollable)",
-        -- new
+        -- 0.7
         OPENSECTION = ">> %d item%s <<", -- usage: string.format(>> %d item%s <<, section_size, section_size == 1 and "" or "s")
         RETURN = "Return (Esc)",
+        -- 0.8
+        RESETTODEFAULT = "Reset to default",
+        RESETTODEFAULT_HOVER = "Reverts all configs to their default values, just as expected.",
+        QUICKPRESETS = "Quick Presets",
     },
     zh = {
         EDIT_KEY = "键...",
@@ -59,9 +63,13 @@ local strings = {
         NEWCOLOR_LBL_STRING = "新:",
         OLDCOLOR_LBL_STRING = "旧:",
         SCROLL_INFO_STRING = "(文本框是可滚动的)",
-        -- 新内容
+        -- 0.7
         OPENSECTION = ">> %d 个配置 <<",
         RETURN = "返回 (Esc)",
+        -- 0.8
+        RESETTODEFAULT = "重置为默认值", -- new, machine-translated
+        RESETTODEFAULT_HOVER = "将所有配置恢复为默认值。", -- new, machine-translated
+        QUICKPRESETS = "快速预设", -- new, machine-translated
     },
 }
 

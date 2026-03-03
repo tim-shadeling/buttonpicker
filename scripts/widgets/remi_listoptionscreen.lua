@@ -9,7 +9,7 @@ local function fontexists(font)
 	if font ~= nil and VALID_FONTS[font] then return font end
 end
 
-local ListOptionScreen = Class(Screen, function(self, list_items, title_text, body_text, hover, buttons, keybind_config, font_config)
+local ListOptionScreen = Class(Screen, function(self, list_items, title_text, body_text, hover, buttons, keybind_config, font_config, centeralign)
 	Screen._ctor(self, "RemiListOptionScreen")
 
 	self.keybind_config = keybind_config
@@ -71,8 +71,10 @@ local ListOptionScreen = Class(Screen, function(self, list_items, title_text, bo
 			btn:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
 			btn:SetFont(CHATFONT)
 			btn:SetTextSize(20)
-			btn.text:SetRegionSize(content_width-30,item_height)
-			btn.text:SetHAlign(ANCHOR_LEFT)
+			if not centeralign then
+				btn.text:SetRegionSize(content_width-30,item_height)
+				btn.text:SetHAlign(ANCHOR_LEFT)
+			end
 			item.btn = btn -- item.root:AddChild(TEMPLATES.StandardButton(nil, "", {content_width+20,item_height+10}))
 			item.text = item.btn.text
 
@@ -88,8 +90,10 @@ local ListOptionScreen = Class(Screen, function(self, list_items, title_text, bo
 			item.focus_forward = item.btn
 		else
 			item.text = item.root:AddChild(Text(CHATFONT, 20, "", UICOLOURS.GOLD_UNIMPORTANT))
-			item.text:SetRegionSize(content_width-30,item_height)
-			item.text:SetHAlign(ANCHOR_LEFT)
+			if not centeralign then
+				item.text:SetRegionSize(content_width-30,item_height)
+				item.text:SetHAlign(ANCHOR_LEFT)
+			end
 			item.SetOnClick = function(_, onclick)
 			end
 
@@ -100,8 +104,9 @@ local ListOptionScreen = Class(Screen, function(self, list_items, title_text, bo
 			self.scroll_list:OnWidgetFocus(item)
 			--
 			local data = list_items[item.real_index]
-			local hover = data and data.hover and ("\n--\n"..data.hover) or ""
-			self.dialog.body:SetString(body_text..hover)
+			local hover = data and data.hover
+			hover = (body_text or "")..(body_text and hover and "\n" or "")..(hover or "")
+			self.dialog.body:SetString(hover)
 			if self.font_config then self.dialog.body:SetFont(fontexists(data.data) or DEFAULTFONT) end
 		end)
 
