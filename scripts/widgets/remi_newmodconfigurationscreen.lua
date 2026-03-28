@@ -996,14 +996,42 @@ function RemiNewModConfigurationScreen:CollectSettings()
 	return settings, keyed_settings
 end
 
+function RemiNewModConfigurationScreen:HasRequireRestartChanges()
+	for _, option in ipairs(self.options) do
+		if option.require_restart and custom_not_equal(option.value, option.initial_value) then
+			return true
+		end
+	end
+	return false
+end
+
+function RemiNewModConfigurationScreen:SaveAndApply(settings, keyed_settings, should_restart)
+	KnownModIndex:SaveConfigurationOptions(function()
+		self:MakeDirty(false)
+		if self.callback then
+			self.callback(keyed_settings)
+		end
+
+		if should_restart then
+			TheSim:Quit()
+		else
+			TheFrontEnd:PopScreen()
+		end
+	end, self.modname, settings, self.client_config)
+end
+
 function RemiNewModConfigurationScreen:Apply()
 	if self:IsDirty() then
 		local settings, keyed_settings = self:CollectSettings()
-		KnownModIndex:SaveConfigurationOptions(function()
-			self:MakeDirty(false)
-			if self.callback then self.callback(keyed_settings) end -- new: send config data immediately
-			TheFrontEnd:PopScreen()
-		end, self.modname, settings, self.client_config)
+		if self:HasRequireRestartChanges() then
+			TheFrontEnd:PushScreen(PopupDialogScreen(STRINGS.UI.MODSSCREEN.RESTART_TITLE, STRINGS.UI.MODSSCREEN.RESTART_REQUIRED,
+			{
+				{text = STRINGS.UI.MODSSCREEN.RESTART, cb = function() self:SaveAndApply(settings, keyed_settings, true) end},
+				{text = STRINGS.UI.MODSSCREEN.CANCEL, cb = function() TheFrontEnd:PopScreen() end},
+			}))
+		else
+			self:SaveAndApply(settings, keyed_settings, false)
+		end
 	else
 		self:MakeDirty(false)
 		TheFrontEnd:PopScreen()
