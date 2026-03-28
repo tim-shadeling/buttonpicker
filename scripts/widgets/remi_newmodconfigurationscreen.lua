@@ -18,6 +18,7 @@ local DictionaryEditScreen = require "widgets/remi_dictionaryeditscreen"
 local ManualSupport = require "remi_manualsupport"
 
 local DISPLAYSTR_MAXCHARS = 30
+local DISABLED_TEXT_COLOUR = {0.55, 0.55, 0.55, 1}
 
 local function checkdesc(desc)
 	return (type(desc) == "string" or type(desc) == "number") and tostring(desc) or "!!! WRONG DESC !!!"
@@ -50,6 +51,20 @@ end
 
 local function custom_equal(a,b)
 	return not custom_not_equal(a,b) -- wow
+end
+
+local function table_contains_equal(list, value)
+	if type(list) ~= "table" then
+		return false
+	end
+
+	for _, entry in ipairs(list) do
+		if custom_equal(entry, value) then
+			return true
+		end
+	end
+
+	return false
 end
 
 local function BreakIntoSections(options)
@@ -206,6 +221,11 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 		opt:SetFocusSound()
 		opt:SetPosition((item_width/2)-(spinner_width/2)-40, 0)
 		opt:SetOnClick(function()
+			if widget.opt.option and widget.opt.option.is_disabled then
+				TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_negative")
+				widget:ApplyDescription()
+				return
+			end
 			self:GenericOptionCallback(widget.opt.option, widget.opt)
 		end)
 		widget.opt = opt
@@ -218,6 +238,8 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 		widget.opt.UpdateAppearance = function(button)
 			local option = button.option
 			if not option then return end
+			local text_colour = option.is_disabled and DISABLED_TEXT_COLOUR or UICOLOURS.GOLD_CLICKABLE
+			local focus_colour = option.is_disabled and DISABLED_TEXT_COLOUR or UICOLOURS.GOLD_FOCUS
 
 			if custom_not_equal(option.value, option.initial_value) then
 				widget.changed_image:Show()
@@ -232,18 +254,23 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				end
 				--
 				button:SetText(option.displaystr)
-				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
-				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+				button:SetTextColour(text_colour)
+				button:SetTextFocusColour(focus_colour)
 				button:SetFont(CHATFONT)
 			elseif option.is_text_config then -- don't check anything for inputs
 				button:SetText(tostring(option.value))
-				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
-				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+				button:SetTextColour(text_colour)
+				button:SetTextFocusColour(focus_colour)
 				button:SetFont(CHATFONT)
 			elseif option.is_rgb_config or option.is_rgba_config then
 				button:SetText("████")
-				button:SetTextColour(unpack(option.value))
-				button:SetTextFocusColour(unpack(option.value))
+				if option.is_disabled then
+					button:SetTextColour(text_colour)
+					button:SetTextFocusColour(focus_colour)
+				else
+					button:SetTextColour(unpack(option.value))
+					button:SetTextFocusColour(unpack(option.value))
+				end
 				button:SetFont(CHATFONT)
 			elseif option.choices then
 				if not option.displaystr and type(option.value) == "table" then
@@ -255,8 +282,8 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				end
 				--
 				button:SetText(option.displaystr or "...")
-				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
-				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+				button:SetTextColour(text_colour)
+				button:SetTextFocusColour(focus_colour)
 				button:SetFont(CHATFONT)
 			elseif option.is_set_config then
 				if not option.displaystr and type(option.value) == "table" then
@@ -268,8 +295,8 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				end
 				--
 				button:SetText(option.displaystr or "...")
-				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
-				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+				button:SetTextColour(text_colour)
+				button:SetTextFocusColour(focus_colour)
 				button:SetFont(CHATFONT)
 			elseif option.is_array_config then
 				if not option.displaystr and type(option.value) == "table" then
@@ -281,8 +308,8 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				end
 				--
 				button:SetText(option.displaystr or "...")
-				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
-				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+				button:SetTextColour(text_colour)
+				button:SetTextFocusColour(focus_colour)
 				button:SetFont(CHATFONT)
 			elseif option.is_dictionary_config then
 				if not option.displaystr and type(option.value) == "table" then
@@ -294,12 +321,12 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				end
 				--
 				button:SetText(option.displaystr or "...")
-				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
-				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+				button:SetTextColour(text_colour)
+				button:SetTextFocusColour(focus_colour)
 				button:SetFont(CHATFONT)
 			else
-				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
-				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
+				button:SetTextColour(text_colour)
+				button:SetTextFocusColour(focus_colour)
 				button:SetFont(CHATFONT)
 				--
 				for k,v in ipairs(option.options) do
@@ -318,8 +345,14 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 		revert:SetOnClick(
 			function()
 				local option = widget.opt.option
+				if option and option.is_disabled then
+					TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_negative")
+					widget:ApplyDescription()
+					return
+				end
 				option.value = shallowcopy(option.default)
 				option.displaystr = nil
+				self:RefreshOptionStates()
 				widget.opt:UpdateAppearance()
 				self:MakeDirty()
 			end)
@@ -332,12 +365,18 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 		unbind:SetOnClick(
 			function()
 				local option = widget.opt.option
+				if option and option.is_disabled then
+					TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_negative")
+					widget:ApplyDescription()
+					return
+				end
 				if self.format then
 					if self.format[-1] ~= nil then option.value = self.format[-1] else TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_negative") end
 				else
 					option.value = -1
 				end
 
+				self:RefreshOptionStates()
 				widget.opt:UpdateAppearance()
 				self:MakeDirty()
 			end)
@@ -358,6 +397,11 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 			if not option then return end
 
 			self.option_description:SetString(option.hover or "")
+			if option.is_disabled then
+				self.value_description:SetFont(CHATFONT)
+				self.value_description:SetString(option.disabled_reason or "")
+				return
+			end
 
 			for k,v in ipairs(option.options) do
 				if custom_equal(v.data, option.value) then
@@ -400,7 +444,7 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				widget.opt:Show()
 				widget.opt:Unselect()
 				widget.label:SetSize(25) -- same as LabelSpinner's default.
-				widget.label:SetColour(option._section and UICOLOURS.WHITE or UICOLOURS.GOLD)
+				widget.label:SetColour(option.is_disabled and DISABLED_TEXT_COLOUR or (option._section and UICOLOURS.WHITE or UICOLOURS.GOLD))
 			else -- header and no section
 				widget.bg:Hide()
 				widget.opt:Hide()
@@ -409,16 +453,17 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				widget.label:SetColour(UICOLOURS.GOLD)
 			end
 
-			if option.is_keybind then
+			if option.is_keybind and not option.is_disabled then
 				widget.unbind:Show()
 			else
 				widget.unbind:Hide()
 			end
 
-			if option.is_text_config 
+			if not option.is_disabled and (
+			option.is_text_config 
 			or option.is_rgb_config or option.is_rgba_config 
 			or option.choices 
-			or option.is_set_config or option.is_array_config or option.is_dictionary_config then
+			or option.is_set_config or option.is_array_config or option.is_dictionary_config) then
 				widget.revert:Show()
 			else
 				widget.revert:Hide()
@@ -502,6 +547,7 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 	self.search_bar = search_bar
 	self.default_focus = self.options_scroll_list
 	self:HookupFocusMoves()
+	self:RefreshOptionStates()
 end)
 
 
@@ -531,6 +577,53 @@ function RemiNewModConfigurationScreen:FilterConfigs()
 	self.pre_section_scroll_pos = nil
 end
 
+function RemiNewModConfigurationScreen:GetOptionValue(name)
+	for _, option in ipairs(self.options) do
+		if option.name == name then
+			return option.value
+		end
+	end
+end
+
+function RemiNewModConfigurationScreen:IsOptionDisabled(option)
+	local rule = option and option.disabled_by or nil
+	if rule == nil or rule.option == nil then
+		return false
+	end
+
+	local controller_value = self:GetOptionValue(rule.option)
+
+	if rule.values ~= nil then
+		return table_contains_equal(rule.values, controller_value)
+	end
+
+	return custom_equal(controller_value, rule.value)
+end
+
+function RemiNewModConfigurationScreen:GetOptionDisabledReason(option)
+	local rule = option and option.disabled_by or nil
+	if rule ~= nil and rule.reason ~= nil then
+		return rule.reason
+	end
+	return option and option.hover or ""
+end
+
+function RemiNewModConfigurationScreen:RefreshOptionStates()
+	for _, option in ipairs(self.options) do
+		option.is_disabled = self:IsOptionDisabled(option)
+		option.disabled_reason = option.is_disabled and self:GetOptionDisabledReason(option) or nil
+	end
+
+	for _, widget in ipairs(self.options_scroll_list.widgets_to_update or {}) do
+		if widget.opt and widget.opt.option then
+			widget.opt:UpdateAppearance()
+			if widget.focus and widget.ApplyDescription then
+				widget:ApplyDescription()
+			end
+		end
+	end
+end
+
 function RemiNewModConfigurationScreen:SetSection(option, option_button)
 	if option == nil then
 		self.title:Reset()
@@ -554,6 +647,12 @@ function RemiNewModConfigurationScreen:SetSection(option, option_button)
 end
 
 function RemiNewModConfigurationScreen:GenericOptionCallback(option, option_button)
+	if option.is_disabled then
+		TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_negative")
+		option_button:ApplyDescription()
+		return
+	end
+
 	if option._section then
 		self:SetSection(option, option_button)
 	elseif option.is_keybind then
@@ -648,6 +747,7 @@ function RemiNewModConfigurationScreen:OnComplexDataSet(option, option_button, d
 	option.value = data
 	TheFrontEnd:GetSound():PlaySound("meta4/winona_remote/click", nil, .3)
 	self:MakeDirty()
+	self:RefreshOptionStates()
 	option_button:UpdateAppearance()
 	option_button:ApplyDescription()
 end
@@ -667,6 +767,7 @@ function RemiNewModConfigurationScreen:OnColorSet(option, option_button, color)
 	option.value = color
 	TheFrontEnd:GetSound():PlaySound("terraria1/skins/life_crystal", nil, .3)
 	self:MakeDirty()
+	self:RefreshOptionStates()
 	option_button:UpdateAppearance()
 	option_button:ApplyDescription()
 end
@@ -707,6 +808,7 @@ function RemiNewModConfigurationScreen:OnInputSet(option, option_button, input)
 	option.value = input
 	TheFrontEnd:GetSound():PlaySound("meta4/winona_remote/click", nil, .3)
 	self:MakeDirty()
+	self:RefreshOptionStates()
 	option_button:UpdateAppearance()
 	option_button:ApplyDescription()
 end
@@ -715,6 +817,7 @@ function RemiNewModConfigurationScreen:AlternateOption(option, option_button)
 	option.value = not option.value
 	TheFrontEnd:GetSound():PlaySound(option.value and "meta4/wires_minigame/wire_connect" or "meta4/wires_minigame/wire_disconnect", nil, .75)
 	self:MakeDirty()
+	self:RefreshOptionStates()
 	option_button:UpdateAppearance()
 	option_button:ApplyDescription()
 end
@@ -725,6 +828,7 @@ function RemiNewModConfigurationScreen:SetOption(option, option_button)
 		option.value = value
 		TheFrontEnd:GetSound():PlaySound("meta4/winona_remote/click", nil, .3)
 		self:MakeDirty()
+		self:RefreshOptionStates()
 		TheFrontEnd:PopScreen()
 		option_button:UpdateAppearance()
 		option_button:ApplyDescription()
@@ -810,6 +914,7 @@ function RemiNewModConfigurationScreen:OnBindSet(option, option_button, input)
 		if valid_input ~= KEY_ESCAPE then
 			option.value = valid_input
 			TheFrontEnd:GetSound():PlaySound("meta4/winona_remote/click", nil, .3)
+			self:RefreshOptionStates()
 			option_button:UpdateAppearance()
 			option_button:ApplyDescription()
 			self:MakeDirty()
@@ -847,6 +952,7 @@ function RemiNewModConfigurationScreen:ApplyQuickPreset(preset)
 		end
 	end
 
+	self:RefreshOptionStates()
 	for k,v in ipairs(self.options_scroll_list.widgets_to_update) do v.opt:UpdateAppearance() end
 	self.value_description:SetString("")
 
@@ -861,6 +967,7 @@ function RemiNewModConfigurationScreen:ResetToDefaultValues(direct)
 			--v.selected_value = v.default
 		end
 		--self.options_scroll_list:RefreshView()
+		self:RefreshOptionStates()
 		for k,v in ipairs(self.options_scroll_list.widgets_to_update) do v.opt:UpdateAppearance() end
 		self.value_description:SetString("")
 	end
