@@ -1,4 +1,4 @@
-local lang = GLOBAL.LanguageTranslator.defaultlang or "en"
+local lang = _G.LanguageTranslator.defaultlang or "en"
 local languages =
 {
     zh = "zh", -- Chinese for Steam
@@ -44,6 +44,10 @@ local strings = {
         RESETTODEFAULT = "Reset to default",
         RESETTODEFAULT_HOVER = "Reverts all configs to their default values, just as expected.",
         QUICKPRESETS = "Quick Presets",
+        -- 0.9
+        RECFG_NAME = "Reconfigure Mods",
+        RECFG_TITLE = "Reconfigurable Mods"
+        RECFG_DESC = "Some mods can be reconfigured without having to restart the game.",
     },
     zh = {
         EDIT_KEY = "键...",
@@ -70,7 +74,11 @@ local strings = {
         RESETTODEFAULT = "重置为默认值", -- new, machine-translated
         RESETTODEFAULT_HOVER = "将所有配置恢复为默认值。", -- new, machine-translated
         QUICKPRESETS = "快速预设", -- new, machine-translated
+        -- 0.9
+        RECFG_NAME = "重新配置MOD", -- new, machine-translated
+        RECFG_TITLE = "可重构MOD" -- new, machine-translated
+        RECFG_DESC = "部分MOD无需重启游戏即可重新配置。", -- new, machine-translated
     },
 }
 
-GLOBAL.STRINGS.BUTTONPICKER = strings[lang]
+STRINGS.BUTTONPICKER = strings[lang]
