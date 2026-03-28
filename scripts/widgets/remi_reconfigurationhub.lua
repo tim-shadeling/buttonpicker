@@ -199,4 +199,14 @@ function ReconfigurationHub:_Cancel()
 	TheFrontEnd:PopScreen(self)
 end
 
+function ReconfigurationHub:OnControl(control, down)
+	if ReconfigurationHub._base.OnControl(self, control, down) then return true end
+
+	if not down then
+		if control == CONTROL_CANCEL then
+			self:_Cancel()
+		end
+	end
+end
+
 return ReconfigurationHub
