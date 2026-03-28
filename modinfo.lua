@@ -206,6 +206,10 @@ local en_configuration_options = {
 
 	-- List.
 	-- This is the default type of config.
+	--
+	-- Feature of 0.9: require_restart
+	-- Add "require_restart = true" if changing this config should only take effect after restarting the game.
+	-- When the player applies changes, the extension will show the game's restart-required popup.
 	{
 		name = "LIST_EXAMPLE",
 		label = "List Example",
@@ -224,6 +228,7 @@ local en_configuration_options = {
 		},
 		default = 8, -- make sure there's an option that corresponds to this value
 		hover = "Instead of scrolling through the options, pick from a list!",
+		require_restart = true,
 	},
 
 	-- Keybind.
@@ -274,6 +279,11 @@ local en_configuration_options = {
 	-- A pre-determined list of options isn't always enough. What if you need the player to choose a prefab, or multiple prefabs?
 	-- Surely you aren't going to list all the prefabs, especially considering their number is constantly increasing.
 	--
+	-- Feature of 0.9: disabled_by
+	-- Add "disabled_by = { option = \"OTHER_OPTION\", value = SOME_VALUE, reason = \"...\" }"
+	-- to grey out this config when another config has a specific value.
+	-- You can also use "values = { ... }" instead of a single "value".
+	--
 	-- You make a config into a text input by adding "is_text_config = true," to its definition, as shown below.
 	-- Please make sure to include a hover text contatining an explanation of what kind if input you are expecting from the player.
 	-- It would also not hurt to provide an example.
@@ -288,6 +298,29 @@ local en_configuration_options = {
 		hover = text_edit_hover, -- explanation here
 		--
 		is_text_config = true, -- this does the magic
+		disabled_by = {
+			option = "TOGGLE_EXAMPLE",
+			value = false,
+			reason = "Enable Toggle Example first.",
+		},
+	},
+
+	-- disabled_by with multiple values.
+	-- This option will be disabled whenever LIST_EXAMPLE is set to Option A or Option B.
+	{
+		name = "TEXT_EXAMPLE_MULTI_DISABLE",
+		label = "Text Input Multi-Disable Example",
+		options = {
+			{description = "Enable the mod!", data = "disabled by multiple values"},
+		},
+		default = "disabled by multiple values",
+		hover = "This example uses disabled_by.values.",
+		is_text_config = true,
+		disabled_by = {
+			option = "LIST_EXAMPLE",
+			values = {1, 2},
+			reason = "Choose Option C or later in List Example to edit this.",
+		},
 	},
 
 	-- Color.
@@ -587,6 +620,10 @@ zh_configuration_options = {
 
 	-- 列表.
 	-- 这是默认的配置类型。
+	--
+	-- 0.9 版本新增功能：require_restart
+	-- 如果修改这个配置需要在重启游戏后才生效，请添加 "require_restart = true"。
+	-- 当玩家点击应用时，配置扩展会弹出游戏原生的“需要重启”提示。
 	{
 		name = "LIST_EXAMPLE",
 		label = "列表示例",
@@ -605,6 +642,7 @@ zh_configuration_options = {
 		},
 		default = 8, -- 确保有一个选项对应于该值
 		hover = "不要在选项中切换，而是从列表中选择！",
+		require_restart = true,
 	},
 
 	-- 快捷键绑定
@@ -655,6 +693,12 @@ zh_configuration_options = {
 	-- 一个预先确定的选项列表并不总是足够的。如果你需要玩家选择一个prefab或多个prefab怎么办？
 	-- 当然，你不会列出所有的prefab，特别是考虑到它们的数量在不断增加。
 	--
+	-- 0.9 版本新增功能：disabled_by
+	-- 你可以添加
+	-- disabled_by = { option = "其它配置名", value = 某个值, reason = "提示文本" }
+	-- 来让某个配置在另一个配置为指定值时变灰且不可操作。
+	-- 如果需要多个值，可以把 value 改成 values = { ... }。
+	--
 	-- 你可以通过在其定义中添加 "is_text_config = true"，将配置变为文本输入，如下所示。
 	-- 请确保包含一个悬停文本，其中包含一个解释，说明你希望从玩家那里得到什么样的输入内容。
 	-- 举个例子也无妨。
@@ -669,6 +713,29 @@ zh_configuration_options = {
 		hover = text_edit_hover, -- 此处为解释
 		--
 		is_text_config = true, -- 这就是魔术
+		disabled_by = {
+			option = "TOGGLE_EXAMPLE",
+			value = false,
+			reason = "请先启用“开关示例”。",
+		},
+	},
+
+	-- disabled_by 的多值版本。
+	-- 当“列表示例”是选项A或选项B时，这个配置会被禁用。
+	{
+		name = "TEXT_EXAMPLE_MULTI_DISABLE",
+		label = "文本输入多值禁用示例",
+		options = {
+			{description = "请启用此Mod！", data = "被多个值禁用"},
+		},
+		default = "被多个值禁用",
+		hover = "这个示例演示 disabled_by.values 的写法。",
+		is_text_config = true,
+		disabled_by = {
+			option = "LIST_EXAMPLE",
+			values = {1, 2},
+			reason = "请把“列表示例”切换到选项C或之后的选项。",
+		},
 	},
 
 	-- 颜色.
