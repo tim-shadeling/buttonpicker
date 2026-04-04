@@ -6,13 +6,6 @@ local TEMPLATES = require "widgets/redux/templates"
 
 local RemiNewModConfigurationScreen = require "widgets/remi_newmodconfigurationscreen"
 
-local function ReconfigureMod(modname, callback)
-	TheFrontEnd:PushScreen(RemiNewModConfigurationScreen(modname, true, function(...)
-		callback(...)
-		TheFrontEnd:PopScreen() -- return straight to the game
-	end))
-end
-
 -- A very simple listing of mods that added their names (and reconfiguration callbacks) to REMI_RECONFIGURABLE_MODS
 local ReconfigurationHub = Class(Screen, function(self)
 	Screen._ctor(self, "ReconfigurationHub")
@@ -27,7 +20,7 @@ local ReconfigurationHub = Class(Screen, function(self)
 	self.loaded_infoprefabs = {}
 	self:LoadModInfoPrefabs()
 
-	--self.black = self:AddChild(TEMPLATES.BackgroundTint())
+	self.black = self:AddChild(TEMPLATES.BackgroundTint())
 	self.root = self:AddChild(TEMPLATES.ScreenRoot("root"))
 
 	local window_width = 360
@@ -86,6 +79,13 @@ local ReconfigurationHub = Class(Screen, function(self)
 	self:CreateModsScrollList()
 end)
 
+function ReconfigurationHub:ReconfigureMod(modname, callback)
+	TheFrontEnd:PushScreen(RemiNewModConfigurationScreen(modname, true, function(...)
+		callback(...)
+		TheFrontEnd:PopScreen() -- return straight to the game
+	end))
+end
+
 function ReconfigurationHub:UnloadModInfoPrefabs()
 	TheSim:UnloadPrefabs(self.loaded_infoprefabs)
 	TheSim:UnregisterPrefabs(self.loaded_infoprefabs)
@@ -136,7 +136,7 @@ function ReconfigurationHub:CreateModsScrollList()
 		w:SetOnGainFocus(function() self.scroll_list:OnWidgetFocus(w) end)
 
 		w.moditem = w:AddChild(TEMPLATES.ModListItem(function()
-			ReconfigureMod(w.data.modname, w.data.callback)
+			self:ReconfigureMod(w.data.modname, w.data.callback)
 		end,
 		function() end,
 		function() end))

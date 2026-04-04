@@ -46,6 +46,7 @@ local strings = {
         QUICKPRESETS = "Quick Presets",
         -- 0.9
         RECFG_NAME = "Reconfigure Mods",
+        RECFG_LAST = "Reconfigure Last Mod",
         RECFG_TITLE = "Reconfigurable Mods",
         RECFG_DESC = "Some mods can be reconfigured without having to restart the game.",
     },
@@ -76,6 +77,7 @@ local strings = {
         QUICKPRESETS = "快速预设", -- new, machine-translated
         -- 0.9
         RECFG_NAME = "重新配置MOD", -- new, machine-translated
+        RECFG_LAST = "重新配置最后一个MOD", -- new, machine-translated
         RECFG_TITLE = "可重构MOD", -- new, machine-translated
         RECFG_DESC = "部分MOD无需重启游戏即可重新配置。", -- new, machine-translated
     },

@@ -76,12 +76,12 @@ end
 
 AddGamePostInit(function() -- 必须放在游戏初始化函数中，以确保所有 MOD 都已加载
 	local mods = GLOBAL.rawget(GLOBAL, "REMI_RECONFIGURABLE_MODS") -- 使用 rawget 可以避免因某些原因导致表不存在而崩溃
-	if mods then mods[modname] = Reconfigure end -- 键是 modname（内置变量，无需定义），值是您的重新配置函数
+	if mods then mods[modname] = Reconfigure end -- 键是 modname(内置变量，无需定义)，值是您的重新配置函数
 end)
 
 --]]
 
--- 3. 在游戏中，用户可以您可以通过运行 `/recfg`（或 `/cfg`）命令访问重配置中心。
+-- 3. 在游戏中，用户可以您可以通过运行 `/recfg`(或 `/cfg`)命令访问重配置中心。
 -- 重配置中心列出了所有已将其功能添加到 `REMI_RECONFIGURABLE_MODS` 的模块。
 -- 点击模块条目将打开其配置界面，用户可以在此进行必要的更改。
--- 点击“应用”按钮后，配置更改将（应该）立即生效。
+-- 点击“应用”按钮后，配置更改将(应该)立即生效。
