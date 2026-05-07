@@ -38,7 +38,8 @@ local strings = {
         OLDCOLOR_LBL_STRING = "Old:",
         SCROLL_INFO_STRING = "(textboxes are scrollable)",
         -- 0.7
-        OPENSECTION = ">> %d item%s <<", -- usage: string.format(>> %d item%s <<, section_size, section_size == 1 and "" or "s")
+        OPENSECTION = "-- Open --",
+        COLLAPSESECTION = ">> Collapse <<", -- 0.9.1 
         RETURN = "Return (Esc)",
         -- 0.8
         RESETTODEFAULT = "Reset to default",
@@ -69,7 +70,8 @@ local strings = {
         OLDCOLOR_LBL_STRING = "旧:",
         SCROLL_INFO_STRING = "(文本框是可滚动的)",
         -- 0.7
-        OPENSECTION = ">> %d 个配置 <<",
+        OPENSECTION = "-- 打开 --",
+        COLLAPSESECTION = "-- Collapse --", -- 0.9.1 
         RETURN = "返回 (Esc)",
         -- 0.8
         RESETTODEFAULT = "重置为默认值", -- new, machine-translated

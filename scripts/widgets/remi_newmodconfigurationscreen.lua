@@ -226,12 +226,7 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 			end
 
 			if option._section then
-				if not option.displaystr then 
-					local section_size = #option._section
-					option.displaystr = string.format(STRINGS.BUTTONPICKER.OPENSECTION, section_size, section_size == 1 and "" or "s")
-				end
-				--
-				button:SetText(option.displaystr)
+				button:SetText(option._section_opened and STRINGS.BUTTONPICKER.COLLAPSESECTION or STRINGS.BUTTONPICKER.OPENSECTION)
 				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
 				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
 				button:SetFont(CHATFONT)
@@ -395,17 +390,23 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				widget:ApplyDescription()
 			end
 
-			if not option.is_header or option._section then
-				widget.bg:Show()
+			if option._section then
+				widget.bg:Hide()
 				widget.opt:Show()
 				widget.opt:Unselect()
-				widget.label:SetSize(25) -- same as LabelSpinner's default.
-				widget.label:SetColour(option._section and UICOLOURS.WHITE or UICOLOURS.GOLD)
-			else -- header and no section
+				widget.label:SetSize(30)
+				widget.label:SetColour(UICOLOURS.WHITE)
+			elseif option.is_header then
 				widget.bg:Hide()
 				widget.opt:Hide()
 				widget.opt:Select()
-				widget.label:SetSize(30)
+				widget.label:SetSize(27)
+				widget.label:SetColour(UICOLOURS.GOLD)
+			else
+				widget.bg:Show()
+				widget.opt:Show()
+				widget.opt:Unselect()
+				widget.label:SetSize(24)
 				widget.label:SetColour(UICOLOURS.GOLD)
 			end
 
@@ -531,6 +532,7 @@ function RemiNewModConfigurationScreen:FilterConfigs()
 	self.pre_section_scroll_pos = nil
 end
 
+--[[
 function RemiNewModConfigurationScreen:SetSection(option, option_button)
 	if option == nil then
 		self.title:Reset()
@@ -552,10 +554,47 @@ function RemiNewModConfigurationScreen:SetSection(option, option_button)
 		self.options_scroll_list:ScrollToScrollPos(1)
 	end
 end
+--]]
+
+function RemiNewModConfigurationScreen:ToggleSection(option, option_button)
+	if next(option._section) == nil then 
+		TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/click_negative")
+		return 
+	end
+
+	local pos
+	for k, v in ipairs(self.split_options) do if v == option then
+		pos = k
+		break
+	end end
+
+	local section_size = #option._section
+
+	if option._section_opened then
+		for i = section_size, 1, -1 do
+			table.remove(self.split_options, pos + i)
+		end
+		
+		option._section_opened = false
+		self.options_scroll_list:SetItemsData(self.split_options)
+
+		TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/craft_close")
+	else
+		for i, v in ipairs(option._section) do
+			table.insert(self.split_options, pos + i, v)
+		end
+
+		option._section_opened = true
+		self.options_scroll_list:SetItemsData(self.split_options)
+
+		TheFrontEnd:GetSound():PlaySound("dontstarve/HUD/craft_open")
+	end
+end
+
 
 function RemiNewModConfigurationScreen:GenericOptionCallback(option, option_button)
 	if option._section then
-		self:SetSection(option, option_button)
+		self:ToggleSection(option, option_button)
 	elseif option.is_keybind then
 		self:SetBind(option, option_button)
 	elseif option.is_set_config then
