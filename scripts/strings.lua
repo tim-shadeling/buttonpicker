@@ -71,7 +71,7 @@ local strings = {
         SCROLL_INFO_STRING = "(文本框是可滚动的)",
         -- 0.7
         OPENSECTION = "-- 打开 --",
-        COLLAPSESECTION = "-- Collapse --", -- 0.9.1 
+        COLLAPSESECTION = ">> 隐藏 <<", -- 0.9.1 
         RETURN = "返回 (Esc)",
         -- 0.8
         RESETTODEFAULT = "重置为默认值", -- new, machine-translated
