@@ -7,7 +7,7 @@ description = en_zh(
 	"Improves user experience when configurating mods and allows for different types of settings: keybinds, text inputs, color pickers, multiple choices...",
 	"在配置Mod时改善用户体验，并允许不同类型的设置: 快捷键绑定，文本输入，颜色选择，多项选择...")
 author = "Remi"
-version = "0.9.1a"
+version = "0.9.2"
 
 forumthread = ""
 
@@ -317,6 +317,19 @@ local en_configuration_options = {
 		default = {1,1,1,1},
 		is_rgba_config = true,
 		hover = "Pick any color and opacity level!",
+	},
+
+	-- Hex Color.
+	-- Like RGB(A) color configs, this type uses the color picker. The only difference is that Hex Color configs return a hex color string, instead of a color table.
+	{
+		name = "HEX_EXAMPLE",
+		label = "Hex Example",
+		options = {
+			{description = "Enable the mod!", data = "#ffffff"}, -- make sure the data value matches the default
+		},
+		default = "#ffffff",
+		is_hex_config = true,
+		hover = "Pick any hex color!",
 	},
 
 	-- Multiple choices.
@@ -699,6 +712,20 @@ zh_configuration_options = {
 		is_rgba_config = true,
 		hover = "选择任何颜色和不透明度级别！",
 	},
+
+	-- Hex Color.
+	-- Like RGB(A) color configs, this type uses the color picker. The only difference is that Hex Color configs return a hex color string, instead of a color table.
+	{
+		name = "HEX_EXAMPLE",
+		label = "Hex Example",
+		options = {
+			{description = "Enable the mod!", data = "#ffffff"}, -- make sure the data value matches the default
+		},
+		default = "#ffffff",
+		is_hex_config = true,
+		hover = "Pick any hex color!",
+	},
+
 
 	-- 多项选择
 	-- 这一个相比其它的有点棘手（并且它也很难实现）。

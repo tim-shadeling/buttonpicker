@@ -236,9 +236,15 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
 				button:SetFont(CHATFONT)
 			elseif option.is_rgb_config or option.is_rgba_config then
-				button:SetText("████")
+				button:SetText("█████")
 				button:SetTextColour(unpack(option.value))
 				button:SetTextFocusColour(unpack(option.value))
+				button:SetFont(CHATFONT)
+			elseif option.is_hex_config then
+				button:SetText("█ "..option.value)
+				local r, g, b = HexToPercentColor(option.value)
+				button:SetTextColour(r, g, b, 1)
+				button:SetTextFocusColour(r, g, b, 1)
 				button:SetFont(CHATFONT)
 			elseif option.choices then
 				if not option.displaystr and type(option.value) == "table" then
@@ -412,19 +418,15 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				widget.label:SetColour(UICOLOURS.GOLD)
 			end
 
-			if option.is_keybind then
+			if option._section or option.is_header then
+				widget.unbind:Hide()
+				widget.revert:Hide()
+			elseif option.is_keybind then
 				widget.unbind:Show()
+				widget.revert:Hide()
 			else
 				widget.unbind:Hide()
-			end
-
-			if option.is_text_config 
-			or option.is_rgb_config or option.is_rgba_config 
-			or option.choices 
-			or option.is_set_config or option.is_array_config or option.is_dictionary_config then
 				widget.revert:Show()
-			else
-				widget.revert:Hide()
 			end
 
 			widget.label:SetString(label)
@@ -607,7 +609,7 @@ function RemiNewModConfigurationScreen:GenericOptionCallback(option, option_butt
 		self:EditDictionary(option, option_button)
 	elseif option.choices then
 		self:EditMultipleChoices(option, option_button)
-	elseif option.is_rgb_config or option.is_rgba_config then
+	elseif option.is_rgb_config or option.is_rgba_config or option.is_hex_config then
 		self:EditColor(option, option_button)
 	elseif option.is_text_config then
 		self:EditInput(option, option_button)
@@ -701,7 +703,7 @@ function RemiNewModConfigurationScreen:EditColor(option, option_button)
 		{text = STRINGS.UI.MODSSCREEN.BACK, cb = function() TheFrontEnd:PopScreen() end},
 	}
 
-	popup = ColorHelperScreen(option.label, option.hover, buttons, option.value, option.is_rgba_config)
+	popup = ColorHelperScreen(option.label, option.hover, buttons, option.value, option.is_rgba_config, option.is_hex_config)
 	TheFrontEnd:PushScreen(popup)
 end
 
@@ -756,7 +758,8 @@ function RemiNewModConfigurationScreen:OnInputSet(option, option_button, input)
 end
 
 function RemiNewModConfigurationScreen:SwitchToggle(option, option_button) -- it is guaranteed there will be exactly 2 options
-	local newvalue = option.value == option.options[1].data and option.options[2].data or option.options[1].data
+	local newvalue
+	if option.value == option.options[1].data then newvalue = option.options[2].data else newvalue = option.options[1].data end -- can't use ternary since option.options[2].data can be false
 	option.value = newvalue
 	TheFrontEnd:GetSound():PlaySound(option.value and "meta4/wires_minigame/wire_connect" or "meta4/wires_minigame/wire_disconnect", nil, .75)
 	self:MakeDirty()
@@ -892,6 +895,7 @@ function RemiNewModConfigurationScreen:ApplyQuickPreset(preset)
 		if newvalue ~= nil then 
 			v.value = shallowcopy(newvalue)
 			v.displaystr = nil
+			self:OnOptionChanged(v, nil, newvalue)
 		end
 	end
 
@@ -906,6 +910,7 @@ function RemiNewModConfigurationScreen:ResetToDefaultValues(direct)
 		for i,v in ipairs(self.options) do
 			v.value = shallowcopy(v.default)
 			v.displaystr = nil
+			self:OnOptionChanged(v, nil, v.default)
 			--v.selected_value = v.default
 		end
 		--self.options_scroll_list:RefreshView()

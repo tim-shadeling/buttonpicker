@@ -5,8 +5,10 @@ local Text = require "widgets/text"
 local Image = require "widgets/image"
 local TextEdit = require "widgets/textedit"
 
-local RemiColorHelperScreen = Class(Screen, function(self, title, hover, buttons, initial_color, include_alpha)
+local RemiColorHelperScreen = Class(Screen, function(self, title, hover, buttons, initial_color, include_alpha, return_hex)
 	Screen._ctor(self, "RemiColorHelperScreen")
+
+	self.return_hex = return_hex
 
 	self.tint = self:AddChild(TEMPLATES.BackgroundTint())
 	self.proot = self:AddChild(TEMPLATES.ScreenRoot())
@@ -28,7 +30,12 @@ local RemiColorHelperScreen = Class(Screen, function(self, title, hover, buttons
 		self.info_hover = info_hover
 	end
 
-	initial_color = shallowcopy(initial_color)
+	if return_hex then -- initial_color is hex color string, convert to actual color table
+		local r, g, b = HexToPercentColor(initial_color)
+		initial_color = {r, g, b, 1}
+	else
+		initial_color = shallowcopy(initial_color)
+	end
 	initial_color = type(initial_color) == "table" and initial_color or {1,1,1,1}
 	for i = 1,4 do initial_color[i] = initial_color[i] or 1 end
 
@@ -56,6 +63,8 @@ local RemiColorHelperScreen = Class(Screen, function(self, title, hover, buttons
 
 	local channels = include_alpha and 4 or 3
 	for i = 1,channels do
+		local color_limit = i == 4 and 100 or 255
+
 		local label = self.proot:AddChild(Text(CHATFONT, 25, STRINGS.BUTTONPICKER.COLOR_NAMES[i]))
 		label:SetRegionSize(100,40)
 		label:SetHAlign(1)
@@ -67,34 +76,34 @@ local RemiColorHelperScreen = Class(Screen, function(self, title, hover, buttons
 		colorpicker_bg:ScaleToSize(200, 40)
 		colorpicker_bg:SetPosition(100, -50*(i-1))
 
-		local colorpicker = self.proot:AddChild(TextEdit(CHATFONT, 25, tostring(initial_color[i])))
-		colorpicker.actualvalue = initial_color[i]
+		local colorpicker = self.proot:AddChild(TextEdit(CHATFONT, 25, ""))
+		colorpicker.actualvalue = math.floor(initial_color[i]*color_limit + .5)
+		colorpicker:SetString(tostring(colorpicker.actualvalue))
 		colorpicker:SetFocusedImage(colorpicker_bg, "images/global_redux.xml", "textbox3_gold_normal.tex", "textbox3_gold_hover.tex", "textbox3_gold_focus.tex" )
 		colorpicker:SetRegionSize(180, 40)
 		colorpicker:SetAllowNewline(false)
 		colorpicker:SetForceEdit(true)
 		colorpicker:SetTextLengthLimit(5)
 		colorpicker:SetHAlign(1)
-		colorpicker:SetCharacterFilter("1234567890.")
+		colorpicker:SetCharacterFilter("1234567890")
 		colorpicker.OnTextInputted = function()
 			local val = tonumber(colorpicker:GetString())
 			if val then label:SetColour(1,1,1,1) else label:SetColour(1,0,0,1) end
 			val = val or 0
-			if val > 1 then
-				while val > 1 do val = val/10 end
-				colorpicker:SetString(tostring(val))
-			end
+			if val > color_limit then val = color_limit end
+			colorpicker:SetString(tostring(val))
 			colorpicker.actualvalue = val
-			newcolor.ep_current_color[i] = val
+			newcolor.ep_current_color[i] = val/color_limit
 			newcolor:SetTint(unpack(newcolor.ep_current_color))
 		end
 		local oldfn = colorpicker.OnControl
 		colorpicker.OnControl = function(self, control, down)
 			if not down and (control == CONTROL_SCROLLFWD or control == CONTROL_SCROLLBACK) then
-				self.actualvalue = math.clamp(self.actualvalue + (control == CONTROL_SCROLLFWD and -.02 or .02), 0, 1)
+				local delta = TheInput:IsKeyDown(KEY_CTRL) and 1 or 10
+				self.actualvalue = math.clamp(self.actualvalue + (control == CONTROL_SCROLLFWD and -delta or delta), 0, color_limit)
 				self:SetString(tostring(self.actualvalue))
-				self.actualvalue = tonumber(self:GetString()) or self.actualvalue
-				newcolor.ep_current_color[i] = self.actualvalue
+				--self.actualvalue = tonumber(self:GetString()) or self.actualvalue
+				newcolor.ep_current_color[i] = self.actualvalue/color_limit
 				newcolor:SetTint(unpack(newcolor.ep_current_color))
 				return true
 			end
@@ -119,7 +128,17 @@ local RemiColorHelperScreen = Class(Screen, function(self, title, hover, buttons
 end)
 
 function RemiColorHelperScreen:GetCurrentColor()
-	return self.newcolor.ep_current_color
+	local color = self.newcolor.ep_current_color
+	if self.return_hex then
+		local colorstr = "#"
+		for i = 1,3 do
+			local val = string.format("%x", math.floor(color[i]*255 + .5))
+			val = string.rep("0", 2-val:len())..val
+			colorstr = colorstr..val 
+		end
+		return colorstr
+	end
+	return color
 end
 
 function RemiColorHelperScreen:OnControl(control, down)
