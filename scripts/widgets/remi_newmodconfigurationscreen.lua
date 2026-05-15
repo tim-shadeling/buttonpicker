@@ -108,7 +108,7 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				option_data.value = shallowcopy(_value)
 				option_data.initial_value = shallowcopy(_value)
 				option_data.is_keybind = is_keybind
-				option_data.is_toggle = #v.options == 2 and type(v.options[1].data) == "boolean" and type(v.options[2].data) == "boolean" and v.options[1].data ~= v.options[2].data
+				option_data.is_toggle = #v.options == 2 -- any setting with 2 options will now be made into a toggle
 				option_data.is_header = #v.options == 1 and v.options[1].description and v.options[1].description:len() == 0
 				option_data.label = v.label or v.name
 				table.insert(self.options, option_data)
@@ -317,6 +317,7 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				option.displaystr = nil
 				widget.opt:UpdateAppearance()
 				self:MakeDirty()
+				self:OnOptionChanged(option, widget.opt, option.value)
 			end)
 		revert:SetPosition((item_width/2)-20 , 0)
 		revert:SetScale(0.12, 0.12)
@@ -335,6 +336,7 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 
 				widget.opt:UpdateAppearance()
 				self:MakeDirty()
+				self:OnOptionChanged(option, widget.opt, option.value)
 			end)
 		unbind:SetPosition((item_width/2)-20 , 0)
 		unbind:SetScale(0.6, 0.6)
@@ -502,7 +504,7 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 	end
 	self.search_bar = search_bar
 	self.default_focus = self.options_scroll_list
-	self:HookupFocusMoves()
+--	self:HookupFocusMoves()
 end)
 
 
@@ -596,7 +598,7 @@ function RemiNewModConfigurationScreen:GenericOptionCallback(option, option_butt
 	if option._section then
 		self:ToggleSection(option, option_button)
 	elseif option.is_keybind then
-		self:SetBind(option, option_button)
+		self:EditBind(option, option_button)
 	elseif option.is_set_config then
 		self:EditSet(option, option_button)
 	elseif option.is_array_config then
@@ -604,15 +606,15 @@ function RemiNewModConfigurationScreen:GenericOptionCallback(option, option_butt
 	elseif option.is_dictionary_config then
 		self:EditDictionary(option, option_button)
 	elseif option.choices then
-		self:SetMultipleChoices(option, option_button)
+		self:EditMultipleChoices(option, option_button)
 	elseif option.is_rgb_config or option.is_rgba_config then
-		self:SetColor(option, option_button)
+		self:EditColor(option, option_button)
 	elseif option.is_text_config then
-		self:SetInput(option, option_button)
+		self:EditInput(option, option_button)
 	elseif option.is_toggle then
-		self:AlternateOption(option, option_button)
+		self:SwitchToggle(option, option_button)
 	else
-		self:SetOption(option, option_button)
+		self:EditListOption(option, option_button)
 	end
 end
 
@@ -664,7 +666,7 @@ function RemiNewModConfigurationScreen:EditDictionary(option, option_button)
 	TheFrontEnd:PushScreen(popup)
 end
 
-function RemiNewModConfigurationScreen:SetMultipleChoices(option, option_button)
+function RemiNewModConfigurationScreen:EditMultipleChoices(option, option_button)
 	local popup
 	local buttons = {
 		{text = STRINGS.UI.MODSSCREEN.APPLY, cb = function() local descs, data = popup:CollectData(); self:OnComplexDataSet(option, option_button, descs, data); TheFrontEnd:PopScreen() end},
@@ -689,9 +691,10 @@ function RemiNewModConfigurationScreen:OnComplexDataSet(option, option_button, d
 	self:MakeDirty()
 	option_button:UpdateAppearance()
 	option_button:ApplyDescription()
+	self:OnOptionChanged(option, option_button, data)
 end
 
-function RemiNewModConfigurationScreen:SetColor(option, option_button)
+function RemiNewModConfigurationScreen:EditColor(option, option_button)
 	local popup
 	local buttons = {
 		{text = STRINGS.UI.MODSSCREEN.APPLY, cb = function() self:OnColorSet(option, option_button, popup:GetCurrentColor()); TheFrontEnd:PopScreen() end},
@@ -708,9 +711,10 @@ function RemiNewModConfigurationScreen:OnColorSet(option, option_button, color)
 	self:MakeDirty()
 	option_button:UpdateAppearance()
 	option_button:ApplyDescription()
+	self:OnOptionChanged(option, option_button, color)
 end
 
-function RemiNewModConfigurationScreen:SetInput(option, option_button)
+function RemiNewModConfigurationScreen:EditInput(option, option_button)
 	local popup
 	local buttons = {
 		{text = STRINGS.UI.MODSSCREEN.APPLY, cb = function() self:OnInputSet(option, option_button, popup:GetActualString()); TheFrontEnd:PopScreen() end},
@@ -748,32 +752,26 @@ function RemiNewModConfigurationScreen:OnInputSet(option, option_button, input)
 	self:MakeDirty()
 	option_button:UpdateAppearance()
 	option_button:ApplyDescription()
+	self:OnOptionChanged(option, option_button, input)
 end
 
-function RemiNewModConfigurationScreen:AlternateOption(option, option_button)
-	option.value = not option.value
+function RemiNewModConfigurationScreen:SwitchToggle(option, option_button) -- it is guaranteed there will be exactly 2 options
+	local newvalue = option.value == option.options[1].data and option.options[2].data or option.options[1].data
+	option.value = newvalue
 	TheFrontEnd:GetSound():PlaySound(option.value and "meta4/wires_minigame/wire_connect" or "meta4/wires_minigame/wire_disconnect", nil, .75)
 	self:MakeDirty()
 	option_button:UpdateAppearance()
 	option_button:ApplyDescription()
+	self:OnOptionChanged(option, option_button, newvalue)
 end
 
-function RemiNewModConfigurationScreen:SetOption(option, option_button)
-	--print("RemiNewModConfigurationScreen:SetOption",option, option_button)
-	local function apply(value)
-		option.value = value
-		TheFrontEnd:GetSound():PlaySound("meta4/winona_remote/click", nil, .3)
-		self:MakeDirty()
-		TheFrontEnd:PopScreen()
-		option_button:UpdateAppearance()
-		option_button:ApplyDescription()
-	end
-
+function RemiNewModConfigurationScreen:EditListOption(option, option_button)
+	--print("RemiNewModConfigurationScreen:EditListOption",option, option_button)
 	local list_options = {}
 	local default_option = "???"
 	local amount_options = 0
 	for k,v in ipairs(option.options) do
-		list_options[k] = {text = k..".\t"..checkdesc(v.description), hover = v.hover, onclick = function() apply(v.data) end, data = v.data}
+		list_options[k] = {text = k..".\t"..checkdesc(v.description), hover = v.hover, onclick = function() self:OnListOptionSet(option, option_button, v.data) end, data = v.data}
 		if custom_equal(v.data, option.default) then default_option = checkdesc(v.description) end
 		amount_options = amount_options + 1 -- k
 	end
@@ -783,8 +781,18 @@ function RemiNewModConfigurationScreen:SetOption(option, option_button)
 	TheFrontEnd:PushScreen(popup)
 end
 
-function RemiNewModConfigurationScreen:SetBind(option, option_button)
-	--print("RemiNewModConfigurationScreen:SetBind",option, option_button)
+function RemiNewModConfigurationScreen:OnListOptionSet(option, option_button, value)
+	option.value = value
+	TheFrontEnd:GetSound():PlaySound("meta4/winona_remote/click", nil, .3)
+	self:MakeDirty()
+	TheFrontEnd:PopScreen()
+	option_button:UpdateAppearance()
+	option_button:ApplyDescription()
+	self:OnOptionChanged(option, option_button, value)
+end
+
+function RemiNewModConfigurationScreen:EditBind(option, option_button)
+	--print("RemiNewModConfigurationScreen:EditBind",option, option_button)
 
 	--local loc_text = STRINGS.UI.CONTROLSSCREEN.INPUTS[1][option.value] or "Missing key"
 	local valid_options = {--[[{text = "Esc to cancel."},{text = "Backspace to remove bind."}]]}
@@ -852,6 +860,7 @@ function RemiNewModConfigurationScreen:OnBindSet(option, option_button, input)
 			option_button:UpdateAppearance()
 			option_button:ApplyDescription()
 			self:MakeDirty()
+			self:OnOptionChanged(option, option_button, valid_input)
 		end
 
 		self.is_mapping = false
@@ -1010,8 +1019,8 @@ function RemiNewModConfigurationScreen:OnControl(control, down)
 	end
 end
 
-function RemiNewModConfigurationScreen:HookupFocusMoves()
-	-- in the distant future?
+function RemiNewModConfigurationScreen:OnOptionChanged(option, option_button, value)
+	-- you can mod this one
 end
 
 return RemiNewModConfigurationScreen
