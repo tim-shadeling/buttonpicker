@@ -7,7 +7,7 @@ description = en_zh(
 	"Improves user experience when configurating mods and allows for different types of settings: keybinds, text inputs, color pickers, multiple choices...",
 	"在配置Mod时改善用户体验，并允许不同类型的设置: 快捷键绑定，文本输入，颜色选择，多项选择...")
 author = "Remi"
-version = "0.9.2"
+version = "1.0"
 
 forumthread = ""
 
@@ -713,17 +713,17 @@ zh_configuration_options = {
 		hover = "选择任何颜色和不透明度级别！",
 	},
 
-	-- Hex Color.
-	-- Like RGB(A) color configs, this type uses the color picker. The only difference is that Hex Color configs return a hex color string, instead of a color table.
+	-- Hex 颜色. -- NEW, machine-translated/以下部分为新增内容，由机器翻译。
+	-- 十六进制颜色示例：与 RGB(A) 颜色配置类似，这种类型也使用颜色选择器。唯一的区别是，十六进制颜色配置返回的是十六进制颜色字符串，而不是颜色表。
 	{
 		name = "HEX_EXAMPLE",
-		label = "Hex Example",
+		label = "Hex示例",
 		options = {
-			{description = "Enable the mod!", data = "#ffffff"}, -- make sure the data value matches the default
+			{description = "请启用此Mod！", data = "#ffffff"}, -- 请确保此处的data值与默认值匹配
 		},
 		default = "#ffffff",
 		is_hex_config = true,
-		hover = "Pick any hex color!",
+		hover = "选择任意十六进制颜色！",
 	},
 
 
