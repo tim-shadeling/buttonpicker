@@ -14,6 +14,7 @@ local ColorHelperScreen = require "widgets/remi_colorhelperscreen"
 local ListChoiceScreen = require "widgets/remi_listchoicescreen"
 local ArrayEditScreen = require "widgets/remi_arrayeditscreen"
 local DictionaryEditScreen = require "widgets/remi_dictionaryeditscreen"
+local SliderScreen = require "widgets/remi_sliderscreen"
 --
 local ManualSupport = require "remi_manualsupport"
 
@@ -230,7 +231,7 @@ local RemiNewModConfigurationScreen = Class(Screen, function(self, modname, clie
 				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
 				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
 				button:SetFont(CHATFONT)
-			elseif option.is_text_config then -- don't check anything for inputs
+			elseif option.is_text_config or option.slider_data then -- don't check anything for inputs and sliders
 				button:SetText(tostring(option.value))
 				button:SetTextColour(UICOLOURS.GOLD_CLICKABLE)
 				button:SetTextFocusColour(UICOLOURS.GOLD_FOCUS)
@@ -613,6 +614,8 @@ function RemiNewModConfigurationScreen:GenericOptionCallback(option, option_butt
 		self:EditColor(option, option_button)
 	elseif option.is_text_config then
 		self:EditInput(option, option_button)
+	elseif option.slider_data then
+		self:EditSlider(option, option_button)
 	elseif option.is_toggle then
 		self:SwitchToggle(option, option_button)
 	else
@@ -755,6 +758,26 @@ function RemiNewModConfigurationScreen:OnInputSet(option, option_button, input)
 	option_button:UpdateAppearance()
 	option_button:ApplyDescription()
 	self:OnOptionChanged(option, option_button, input)
+end
+
+function RemiNewModConfigurationScreen:EditSlider(option, option_button)
+	local popup
+	local buttons = {
+		{text = STRINGS.UI.MODSSCREEN.APPLY, cb = function() self:OnSliderSet(option, option_button, popup:GetCurrentValue()); TheFrontEnd:PopScreen() end},
+		-- {text = STRINGS.UI.MODSSCREEN.BACK, cb = function() TheFrontEnd:PopScreen() end},
+	}
+
+	popup = SliderScreen(option.label, option.hover, buttons, option.slider_data, option.value)
+	TheFrontEnd:PushScreen(popup)
+end
+
+function RemiNewModConfigurationScreen:OnSliderSet(option, option_button, value)
+	option.value = value
+	TheFrontEnd:GetSound():PlaySound("meta4/winona_remote/click", nil, .3)
+	self:MakeDirty()
+	option_button:UpdateAppearance()
+	option_button:ApplyDescription()
+	self:OnOptionChanged(option, option_button, value)
 end
 
 function RemiNewModConfigurationScreen:SwitchToggle(option, option_button) -- it is guaranteed there will be exactly 2 options

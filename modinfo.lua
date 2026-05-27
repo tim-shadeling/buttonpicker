@@ -7,7 +7,7 @@ description = en_zh(
 	"Improves user experience when configurating mods and allows for different types of settings: keybinds, text inputs, color pickers, multiple choices...",
 	"在配置Mod时改善用户体验，并允许不同类型的设置: 快捷键绑定，文本输入，颜色选择，多项选择...")
 author = "Remi"
-version = "1.0"
+version = "1.1"
 
 forumthread = ""
 
@@ -288,6 +288,43 @@ local en_configuration_options = {
 		hover = text_edit_hover, -- explanation here
 		--
 		is_text_config = true, -- this does the magic
+	},
+
+	-- Sliders.
+	-- A type of config designed to help specifically with picking numbers. 
+	-- In vanilla, you'd have to create an option for each possible value. Ouch!
+	--
+	-- To make a slider config you have to use the slider_data field. Supply a table of 2 numbers, which will represent the boundaries.
+	-- The user will be able to pick any value between those boundaries.
+	--
+	-- It is required that both boundaries are numbers, and  the left boundary is strictly lesser than the right one.
+	{
+		name = "CONTINUOUS_SLIDER_EXAMPLE",
+		label = "Continuous Slider Example",
+		options = {
+			{description = "Enable the mod!", data = 3.1415}, -- make sure the data value here matches the default value
+		},
+		default = 3.1415, -- this is the default value
+		--
+		hover = "Pick any number within given interval!\nYou can also type the exact value if needed.",
+		--
+		slider_data = {4, 6}, -- 2 numbers: min value, max value
+	},
+
+	-- The interval can also be divided into a number of segments, thus making a discrete slider.
+	-- You can do that by adding a third number to the slider_data table, which will represent the size of each segment.
+	-- The max count of segments allowed is 200, attempting to create more than that will make the slider continuous.
+	{
+		name = "DISCRETE_SLIDER_EXAMPLE",
+		label = "Discrete Slider Example",
+		options = {
+			{description = "Enable the mod!", data = 5.5}, -- should snap to 5.46 when opening slider screen
+		},
+		default = 5.5,
+		--
+		hover = "Pick a number within given interval!\nThe value will be automatically adjusted to the nearest step.",
+		--
+		slider_data = {5, 7, 0.23}, -- 3 numbers: min value, max value, step (just like in lua "for" loops hehe)
 	},
 
 	-- Color.
@@ -682,6 +719,44 @@ zh_configuration_options = {
 		hover = text_edit_hover, -- 此处为解释
 		--
 		is_text_config = true, -- 这就是魔术
+	},
+
+	-- 滑块 -- NEW, machine-translated/以下部分为新增内容，由机器翻译。
+	-- 一种专门用于辅助选择数字的配置类型。
+	-- 在原版游戏中，您需要为每个可能的值创建一个选项。太麻烦了！
+	--
+	-- 要创建滑块配置，您需要使用 `slider_data` 字段。提供一个包含两个数字的表格，这两个数字将代表边界。
+	-- 用户可以选择这两个边界之间的任何值。
+	--
+	-- 两个边界都必须是数字，并且左侧边界的值必须小于右侧边界的值。
+	{
+		name = "CONTINUOUS_SLIDER_EXAMPLE",
+		label = "连续滑块示例",
+		options = {
+			{description = "请启用此Mod！", data = 3.1415}, -- 请确保此处的data值与默认值匹配
+		},
+		default = 3.1415, -- 这是默认值
+		--
+		hover = "在给定的区间内任选一个数字！\n如果需要，您也可以输入确切的值。",
+		--
+		slider_data = {4, 6}, -- 2 个数字：最小值，最大值
+	},
+
+
+	-- 也可以将区间划分成若干段，从而创建一个离散的滑块。
+	-- 您可以通过在 slider_data 表中添加第三个数字来实现这一点，该数字将表示每个段的大小。
+	-- 允许的最大段数为 200，尝试创建超过此数量的段将使滑块变为连续的。
+	{
+		name = "DISCRETE_SLIDER_EXAMPLE",
+		label = "离散滑块示例",
+		options = {
+			{description = "请启用此Mod！", data = 5.5}, -- 应该自动更改为 5.46
+		},
+		default = 5.5,
+		--
+		hover = "在给定的区间内任选一个数字！\n该值将自动调整到最接近的刻度。",
+		--
+		slider_data = {5, 7, 0.23}, -- 3 个数字：最小值、最大值、步长（就像 Lua 的“for”循环一样，呵呵）
 	},
 
 	-- 颜色.

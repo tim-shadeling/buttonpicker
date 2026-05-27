@@ -50,6 +50,8 @@ local strings = {
         RECFG_LAST = "Reconfigure Last Mod",
         RECFG_TITLE = "Reconfigurable Mods",
         RECFG_DESC = "Some mods can be reconfigured without having to restart the game.",
+        -- 1.1
+        BAD_SLIDER_DATA = "Unable to modify slider with invalid parameters:",
     },
     zh = {
         EDIT_KEY = "键...",
@@ -82,6 +84,8 @@ local strings = {
         RECFG_LAST = "重新配置最后一个MOD", -- new, machine-translated
         RECFG_TITLE = "可重构MOD", -- new, machine-translated
         RECFG_DESC = "部分MOD无需重启游戏即可重新配置。", -- new, machine-translated
+        -- 1.1
+        BAD_SLIDER_DATA = "参数无效，无法修改滑块：",
     },
 }
 
