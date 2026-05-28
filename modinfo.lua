@@ -7,7 +7,7 @@ description = en_zh(
 	"Improves user experience when configurating mods and allows for different types of settings: keybinds, text inputs, color pickers, multiple choices...",
 	"在配置Mod时改善用户体验，并允许不同类型的设置: 快捷键绑定，文本输入，颜色选择，多项选择...")
 author = "Remi"
-version = "1.1"
+version = "1.1.1"
 
 forumthread = ""
 
@@ -357,7 +357,7 @@ local en_configuration_options = {
 	},
 
 	-- Hex Color.
-	-- Like RGB(A) color configs, this type uses the color picker. The only difference is that Hex Color configs return a hex color string, instead of a color table.
+	-- Returns a hex color string instead of a color table, otherwise it's the same as RGB color config.
 	{
 		name = "HEX_EXAMPLE",
 		label = "Hex Example",

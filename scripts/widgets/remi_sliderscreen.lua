@@ -144,10 +144,15 @@ function SliderScreen:MakeSlider()
 
 	-- add notches representing steps 
 	if self.marker_step then
-		for i = self.marker_min, self.marker_max, self.marker_step do
+		local i = 0
+		local pos = self.marker_min
+		while pos <= self.marker_max+0.1 do -- slider length is 400, max amount of steps is 200, so min step length is 2
 			local notch = self.slider:AddChild(Image("images/global.xml", "square.tex"))
 			notch:SetSize(3, 8)
-			notch:SetPosition(i, 0)
+			notch:SetPosition(pos, 0)
+			--
+			i = i + 1
+			pos = self.marker_min + i * self.marker_step
 		end
 	end
 

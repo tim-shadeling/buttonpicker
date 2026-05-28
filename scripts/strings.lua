@@ -36,7 +36,7 @@ local strings = {
         COLOR_NAMES = {"Red:", "Green:", "Blue:", "Alpha:"},
         NEWCOLOR_LBL_STRING = "New:",
         OLDCOLOR_LBL_STRING = "Old:",
-        SCROLL_INFO_STRING = "(textboxes are scrollable)",
+        SCROLL_INFO_STRING = "(RGBA textboxes are scrollable)",
         -- 0.7
         OPENSECTION = "-- Open --",
         COLLAPSESECTION = ">> Collapse <<", -- 0.9.1 
@@ -52,6 +52,7 @@ local strings = {
         RECFG_DESC = "Some mods can be reconfigured without having to restart the game.",
         -- 1.1
         BAD_SLIDER_DATA = "Unable to modify slider with invalid parameters:",
+        HEX = "HEX:",
     },
     zh = {
         EDIT_KEY = "键...",
@@ -70,7 +71,7 @@ local strings = {
         COLOR_NAMES = {"红:", "绿:", "蓝:", "不透明度:"},
         NEWCOLOR_LBL_STRING = "新:",
         OLDCOLOR_LBL_STRING = "旧:",
-        SCROLL_INFO_STRING = "(文本框是可滚动的)",
+        SCROLL_INFO_STRING = "(RGB文本框是可滚动的)",
         -- 0.7
         OPENSECTION = "-- 打开 --",
         COLLAPSESECTION = ">> 隐藏 <<", -- 0.9.1 
@@ -86,6 +87,7 @@ local strings = {
         RECFG_DESC = "部分MOD无需重启游戏即可重新配置。", -- new, machine-translated
         -- 1.1
         BAD_SLIDER_DATA = "参数无效，无法修改滑块：",
+        HEX = "HEX:",
     },
 }
 

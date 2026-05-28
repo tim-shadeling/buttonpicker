@@ -5,6 +5,16 @@ local Text = require "widgets/text"
 local Image = require "widgets/image"
 local TextEdit = require "widgets/textedit"
 
+local function rgb_to_hex(color) -- uses range 0 to 1
+	local colorstr = "#"
+	for i = 1,3 do
+		local val = string.format("%x", math.floor(color[i]*255 + .5))
+		val = string.rep("0", 2-val:len())..val
+		colorstr = colorstr..val 
+	end
+	return colorstr
+end
+
 local RemiColorHelperScreen = Class(Screen, function(self, title, hover, buttons, initial_color, include_alpha, return_hex)
 	Screen._ctor(self, "RemiColorHelperScreen")
 
@@ -26,31 +36,30 @@ local RemiColorHelperScreen = Class(Screen, function(self, title, hover, buttons
 			region_h = 50, -- same as on the config screen
 		})
 		info_hover.hovertext_bg:SetSize(665*1.2, 50*2.25)
-		rawset(_G, "info_hover", info_hover)
 		self.info_hover = info_hover
 	end
 
+	self.current_color = initial_color
 	if return_hex then -- initial_color is hex color string, convert to actual color table
-		local r, g, b = HexToPercentColor(initial_color)
-		initial_color = {r, g, b, 1}
+		local r, g, b = HexToPercentColor(self.current_color)
+		self.current_color = {r, g, b, 1}
 	else
-		initial_color = shallowcopy(initial_color)
+		self.current_color = shallowcopy(self.current_color)
 	end
-	initial_color = type(initial_color) == "table" and initial_color or {1,1,1,1}
-	for i = 1,4 do initial_color[i] = initial_color[i] or 1 end
+	self.current_color = type(self.current_color) == "table" and self.current_color or {1,1,1,1}
+	for i = 1,4 do self.current_color[i] = self.current_color[i] or 1 end
 
 	local newcolor = self.proot:AddChild(Image("images/global.xml", "square.tex"))
 	newcolor:SetPosition(100,140)
 	newcolor:ScaleToSize(200,100)
-	newcolor:SetTint(unpack(initial_color))
-	newcolor.ep_current_color = initial_color
+	newcolor:SetTint(unpack(self.current_color))
 	self.newcolor = newcolor
 	self.newcolor_lbl = self.proot:AddChild(Text(CHATFONT, 25, STRINGS.BUTTONPICKER.NEWCOLOR_LBL_STRING))
 	self.newcolor_lbl:SetPosition(100,210)
 	local oldcolor = self.proot:AddChild(Image("images/global.xml", "square.tex"))
 	oldcolor:SetPosition(-100,140)
 	oldcolor:ScaleToSize(200,100)
-	oldcolor:SetTint(unpack(initial_color))
+	oldcolor:SetTint(unpack(self.current_color))
 	self.oldcolor = oldcolor
 	self.oldcolor_lbl = self.proot:AddChild(Text(CHATFONT, 25, STRINGS.BUTTONPICKER.OLDCOLOR_LBL_STRING))
 	self.oldcolor_lbl:SetPosition(-100,210)
@@ -77,7 +86,7 @@ local RemiColorHelperScreen = Class(Screen, function(self, title, hover, buttons
 		colorpicker_bg:SetPosition(100, -50*(i-1))
 
 		local colorpicker = self.proot:AddChild(TextEdit(CHATFONT, 25, ""))
-		colorpicker.actualvalue = math.floor(initial_color[i]*color_limit + .5)
+		colorpicker.actualvalue = math.floor(self.current_color[i]*color_limit + .5)
 		colorpicker:SetString(tostring(colorpicker.actualvalue))
 		colorpicker:SetFocusedImage(colorpicker_bg, "images/global_redux.xml", "textbox3_gold_normal.tex", "textbox3_gold_hover.tex", "textbox3_gold_focus.tex" )
 		colorpicker:SetRegionSize(180, 40)
@@ -88,26 +97,32 @@ local RemiColorHelperScreen = Class(Screen, function(self, title, hover, buttons
 		colorpicker:SetCharacterFilter("1234567890")
 		colorpicker.OnTextInputted = function()
 			local val = tonumber(colorpicker:GetString())
-			if val then label:SetColour(1,1,1,1) else label:SetColour(1,0,0,1) end
-			val = val or 0
-			if val > color_limit then val = color_limit end
-			colorpicker:SetString(tostring(val))
-			colorpicker.actualvalue = val
-			newcolor.ep_current_color[i] = val/color_limit
-			newcolor:SetTint(unpack(newcolor.ep_current_color))
+			if val then 
+				if val > color_limit then val = color_limit end
+				colorpicker:SetString(tostring(val))
+				colorpicker.actualvalue = val
+				self.current_color[i] = val/color_limit
+				self:UpdateColorPreview()
+				self:UpdateHexField()
+				--
+				label:SetColour(UICOLOURS.WHITE) 
+			else 
+				label:SetColour(UICOLOURS.RED) 
+			end
 		end
 		local oldfn = colorpicker.OnControl
-		colorpicker.OnControl = function(self, control, down)
+		colorpicker.OnControl = function(widget, control, down)
 			if not down and (control == CONTROL_SCROLLFWD or control == CONTROL_SCROLLBACK) then
 				local delta = TheInput:IsKeyDown(KEY_CTRL) and 1 or 10
-				self.actualvalue = math.clamp(self.actualvalue + (control == CONTROL_SCROLLFWD and -delta or delta), 0, color_limit)
-				self:SetString(tostring(self.actualvalue))
-				--self.actualvalue = tonumber(self:GetString()) or self.actualvalue
-				newcolor.ep_current_color[i] = self.actualvalue/color_limit
-				newcolor:SetTint(unpack(newcolor.ep_current_color))
+				widget.actualvalue = math.clamp(widget.actualvalue + (control == CONTROL_SCROLLFWD and -delta or delta), 0, color_limit)
+				widget:SetString(tostring(widget.actualvalue))
+				--widget.actualvalue = tonumber(widget:GetString()) or self.actualvalue
+				self.current_color[i] = widget.actualvalue/color_limit
+				self:UpdateColorPreview()
+				self:UpdateHexField()
 				return true
 			end
-			return oldfn and oldfn(self, control, down)
+			return oldfn and oldfn(widget, control, down)
 		end
 		colorpicker:SetPosition(100, -50*(i-1))
 		self.colorpickers[i] = colorpicker
@@ -122,23 +137,68 @@ local RemiColorHelperScreen = Class(Screen, function(self, title, hover, buttons
 			self.dialog.actions:SetFocusChangeDir(MOVE_UP, cur_picker)
 		end
 	end
-	
-	--local w,h = TheSim:GetScreenSize()
-	--self.proot:SetScale(w/RESOLUTION_X) -- h/RESOLUTION_Y
+
+	-- hex field for rgb and hex pickers
+	if not include_alpha then
+		local hexlabel = self.proot:AddChild(Text(CHATFONT, 25, STRINGS.BUTTONPICKER.HEX))
+		hexlabel:SetRegionSize(100,40)
+		hexlabel:SetHAlign(1)
+		hexlabel:SetPosition(-150, -150)
+		self.hexlabel = hexlabel
+
+		local hexfield_bg = self.proot:AddChild(Image())
+		hexfield_bg:SetTexture("images/global_redux.xml", "textbox3_gold_normal.tex")
+		hexfield_bg:ScaleToSize(200, 40)
+		hexfield_bg:SetPosition(100, -150)
+		self.hexfield_bg = hexfield_bg
+
+		local hexfield = self.proot:AddChild(TextEdit(CHATFONT, 25, ""))
+		hexfield.actualvalue = return_hex and initial_color or rgb_to_hex(self.current_color)
+		hexfield:SetString(hexfield.actualvalue)
+		hexfield:SetFocusedImage(hexfield_bg, "images/global_redux.xml", "textbox3_gold_normal.tex", "textbox3_gold_hover.tex", "textbox3_gold_focus.tex" )
+		hexfield:SetRegionSize(180, 40)
+		hexfield:SetAllowNewline(false)
+		hexfield:SetForceEdit(true)
+		hexfield:SetTextLengthLimit(7)
+		hexfield:SetHAlign(1)
+		hexfield:SetCharacterFilter("#1234567890AaBbCcDdEeFf")
+		hexfield.OnTextInputted = function()
+			local valid = hexfield:GetString():match("#?[0-9a-fA-F]*")
+			if valid then 
+				valid = valid..string.rep("0", 6-valid:gsub("#", ""):len()) -- the string might be valid but incomplete
+				local r, g, b = HexToRGB(valid)
+				for k,v in pairs{r, g, b} do
+					self.colorpickers[k].actualvalue = v
+					self.colorpickers[k]:SetString(v)
+					self.current_color[k] = v/255
+				end
+				self:UpdateColorPreview()
+				--
+				for i = 1, channels do self.colorlabels[i]:SetColour(UICOLOURS.WHITE) end
+				hexlabel:SetColour(UICOLOURS.WHITE) 
+			else 
+				hexlabel:SetColour(UICOLOURS.RED) 
+			end
+		end
+		hexfield:SetPosition(100, -150)
+		self.hexfield = hexfield
+	end
 end)
 
+function RemiColorHelperScreen:UpdateColorPreview()
+	self.newcolor:SetTint(unpack(self.current_color))
+end
+
+function RemiColorHelperScreen:UpdateHexField()
+	if self.hexfield == nil then return end
+	--
+	self.hexfield:SetString(rgb_to_hex(self.current_color))
+	self.hexlabel:SetColour(UICOLOURS.WHITE)
+end
+
 function RemiColorHelperScreen:GetCurrentColor()
-	local color = self.newcolor.ep_current_color
-	if self.return_hex then
-		local colorstr = "#"
-		for i = 1,3 do
-			local val = string.format("%x", math.floor(color[i]*255 + .5))
-			val = string.rep("0", 2-val:len())..val
-			colorstr = colorstr..val 
-		end
-		return colorstr
-	end
-	return color
+	local color = self.current_color
+	return self.return_hex and rgb_to_hex(color) or color
 end
 
 function RemiColorHelperScreen:OnControl(control, down)
