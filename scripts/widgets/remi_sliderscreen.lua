@@ -6,7 +6,7 @@ local Image = require "widgets/image"
 local ImageButton = require "widgets/imagebutton"
 local TEMPLATES = require "widgets/redux/templates"
 
-local slider_length = 400
+local slider_length = 500
 local default_precision = 4
 
 local function adjust(cur, min, step)
@@ -34,7 +34,7 @@ local SliderScreen = Class(Screen, function(self, title_text, body_text, buttons
 		self.option_cur = round(self.option_cur, default_precision)
 	
 		self.step_pct = self.option_step and self.option_step/(self.option_max - self.option_min)
-		if self.step_pct and self.step_pct < 0.005 then -- disallow creation of more than 200 steps, and make it continuous
+		if self.step_pct and self.step_pct < 1/500 then -- disallow creation of more than 500 steps, and make it continuous
 			self.option_step = nil
 			self.step_pct = nil
 		end
@@ -58,7 +58,7 @@ local SliderScreen = Class(Screen, function(self, title_text, body_text, buttons
 		controller_control = CONTROL_CANCEL,
 	})
 
-	local bg_width = 520
+	local bg_width = 570
 	local body_height = 220
 	self.dialog = self.proot:AddChild(TEMPLATES.CurlyWindow(bg_width, body_height,
 		title_text,
@@ -143,7 +143,9 @@ function SliderScreen:MakeSlider()
 	self.slider_line:SetSize(slider_length, 4)
 
 	-- add notches representing steps 
-	if self.marker_step then
+	if self.marker_step and self.step_pct > 1/50 then -- no notches starting from 50 steps!
+		self.notches = {}
+		--
 		local i = 0
 		local pos = self.marker_min
 		while pos <= self.marker_max+0.1 do -- slider length is 400, max amount of steps is 200, so min step length is 2
@@ -153,7 +155,12 @@ function SliderScreen:MakeSlider()
 			--
 			i = i + 1
 			pos = self.marker_min + i * self.marker_step
+			--
+			self.notches[i] = notch
 		end
+
+		local tint = math.clamp((35 - i)/30, 0.3, 1) -- peaks at 1 at 5 notches, goes down to 0.3 at 26 notches (also 0.5 at 20)
+		for k,v in pairs(self.notches) do v:SetTint(tint, tint, tint, 1) end
 	end
 
 --	self.position_marker = self.slider:AddChild(ImageButton("images/global_redux.xml", "scrollbar_handle.tex"))

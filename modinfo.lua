@@ -7,7 +7,7 @@ description = en_zh(
 	"Improves user experience when configurating mods and allows for different types of settings: keybinds, text inputs, color pickers, multiple choices...",
 	"在配置Mod时改善用户体验，并允许不同类型的设置: 快捷键绑定，文本输入，颜色选择，多项选择...")
 author = "Remi"
-version = "1.1.1"
+version = "1.1.2"
 
 forumthread = ""
 
@@ -313,7 +313,7 @@ local en_configuration_options = {
 
 	-- The interval can also be divided into a number of segments, thus making a discrete slider.
 	-- You can do that by adding a third number to the slider_data table, which will represent the size of each segment.
-	-- The max count of segments allowed is 200, attempting to create more than that will make the slider continuous.
+	-- The max count of segments allowed is 500, attempting to create more than that will make the slider continuous.
 	{
 		name = "DISCRETE_SLIDER_EXAMPLE",
 		label = "Discrete Slider Example",
@@ -745,7 +745,7 @@ zh_configuration_options = {
 
 	-- 也可以将区间划分成若干段，从而创建一个离散的滑块。
 	-- 您可以通过在 slider_data 表中添加第三个数字来实现这一点，该数字将表示每个段的大小。
-	-- 允许的最大段数为 200，尝试创建超过此数量的段将使滑块变为连续的。
+	-- 允许的最大段数为 500，尝试创建超过此数量的段将使滑块变为连续的。
 	{
 		name = "DISCRETE_SLIDER_EXAMPLE",
 		label = "离散滑块示例",
