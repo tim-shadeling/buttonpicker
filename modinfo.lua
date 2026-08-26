@@ -1,13 +1,83 @@
-local function en_zh(en, zh)
-    return locale ~= "zh" and locale ~= "zhr" and locale ~= "zht" and en or zh
-end
+-- EN -- line 148
+-- ZH -- line 578
+-- RU -- line 1015
 
-name = en_zh("Configs Extended", "配置扩展")
-description = en_zh(
-	"Improves user experience when configurating mods and allows for different types of settings: keybinds, text inputs, color pickers, multiple choices...",
-	"在配置Mod时改善用户体验，并允许不同类型的设置: 快捷键绑定，文本输入，颜色选择，多项选择...")
-author = "Remi"
-version = "1.1.2"
+local languages =
+{
+	zh = "zh", -- Chinese for Steam
+	zhr = "zh", -- Chinese for WeGame
+	ch = "zh", -- Chinese mod
+	chs = "zh", -- Chinese mod
+	sc = "zh", -- simple Chinese
+	zht = "zh", -- traditional Chinese for Steam
+	chinese = "zh", -- Chinese mod
+	tc = "zh", -- traditional Chinese
+	cht = "zh", -- Chinese mod
+	ru = "ru",
+	rus = "ru",
+	russian = "ru",
+}
+local lang = languages[locale] or "en"
+
+local strings = { -- replaces en_zh for strings
+	en = {
+		MODNAME= "Configs Extended",
+		MODDESC = "Improves user experience when configurating mods and allows for different types of settings: keybinds, text inputs, color pickers, multiple choices...",
+		KEY_NUM1 = "Num 1",
+		KEY_NUM2 = "Num 2",
+		KEY_NUM3 = "Num 3",
+		KEY_MOUSE3 = "Mouse 3",
+		TEXT_EDIT_HOVER = [[This is the option's hover text! I've left a fair amount of space here to allow mod makers to describe what kind of input they are expecting from the player.
+It would also help a lot to provide an example.
+
+This feature originates from clearlove's Mod Config By Text.]],
+		FILLER_LABEL = "Useless Config #",
+		FILLER_HOVER = "How did it break out??",
+		YES = "Yes", -- wow
+		NO = "No", -- wow
+	},
+
+	zh = {
+		MODNAME= "配置扩展",
+		MODDESC = "在配置Mod时改善用户体验，并允许不同类型的设置: 快捷键绑定，文本输入，颜色选择，多项选择...",
+		KEY_NUM1 = "小键盘 1",
+		KEY_NUM2 = "小键盘 2",
+		KEY_NUM3 = "小键盘 3",
+		KEY_MOUSE3 = "鼠标中键",
+		TEXT_EDIT_HOVER = [[这是选项的悬停文本！
+我在这里留下了相当多的空间，让Mod制作者描述他们希望从玩家那里得到什么样的输入内容。
+举个例子也会有很大帮助。
+
+这个功能来源于clearlove的Mod: 文本模组配置]],
+		FILLER_LABEL = "无用配置 ",
+		FILLER_HOVER = "它是怎么跑出来的？？",
+		YES = "是",
+		NO = "否",
+	},
+
+	ru = {
+		MODNAME= "Configs Extended",
+		MODDESC = "Упрощает настройку модов и обеспечивает поддержку новых типов настроек: привязки, ввод текста, выбор цвета, выбор нескольких вариантов...",
+		KEY_NUM1 = "Num 1",
+		KEY_NUM2 = "Num 2",
+		KEY_NUM3 = "Num 3",
+		KEY_MOUSE3 = "Колесо мыши",
+		TEXT_EDIT_HOVER = [[Я оставил для текстовых настроек немного пространства, где можно будет объяснить пользователю, какой ввод от него ожидается.
+Хорошей идеей будет предоставить образец.
+
+Функционал взят из мода "Mod Config By Text" от clearlove.]],
+		FILLER_LABEL = "Пустышка №",
+		FILLER_HOVER = "Как она выбралась??",
+		YES = "Да",
+		NO = "Нет",
+	},
+}
+local STRINGS = strings[locale]
+
+name = STRINGS.MODNAME
+description = STRINGS.MODDESC
+author = "Remi, Chinese translation by 冰冰羊"
+version = "1.2"
 
 forumthread = ""
 
@@ -21,32 +91,20 @@ server_only_mod = false
 icon_atlas = "modicon.xml"
 icon = "modicon.tex"
 
-local text_edit_hover = en_zh([[This is the option's hover text! I've left a fair amount of space here to allow mod makers to describe what kind of input they are expecting from the player.
-It would also help a lot to provide an example.
-
-This feature originates from clearlove's Mod Config By Text.]],
-
-[[这是选项的悬停文本！
-我在这里留下了相当多的空间，让Mod制作者描述他们希望从玩家那里得到什么样的输入内容。
-举个例子也会有很大帮助。
-
-这个功能来源于clearlove的Mod: 文本模组配置]]
-)
-
 local filler_counter = 0
 local function Filler(is_end)
 	filler_counter = filler_counter + 1
 	return {
 		name = "FILLER_"..filler_counter,
-		label = en_zh("Useless Config #", "无用配置 ")..filler_counter,
+		label = STRINGS.FILLER_LABEL..filler_counter,
 		options = {
-			{description = en_zh("Yes", "是"), data =  "no"},
-			{description =  en_zh("No", "否"), data =  "yes"},
+			{description = STRINGS.YES, data =   "no"},
+			{description =  STRINGS.NO, data =  "yes"},
 		},
 		default = "no",
 		--
 		section_end = is_end,
-		hover = is_end and en_zh("How did it break out??", "它是怎么跑出来的？？") or ""
+		hover = is_end and STRINGS.FILLER_HOVER or ""
 	}
 end
 
@@ -57,15 +115,15 @@ local Keys = {
 	{description = "1", data = 49},
 	{description = "2", data = 50},
 	{description = "3", data = 51},
-	{description = en_zh("Num 1","小键盘 1"), data = 257},
-	{description = en_zh("Num 2","小键盘 2"), data = 258},
-	{description = en_zh("Num 3","小键盘 3"), data = 259},
+	{description = STRINGS.KEY_NUM1, data = 257},
+	{description = STRINGS.KEY_NUM2, data = 258},
+	{description = STRINGS.KEY_NUM3, data = 259},
 	{description = "Alt", data = 308},
 	{description = "Ctrl", data = 306},
 	{description = "A", data = 97},
 	{description = "B", data = 98},
 	{description = "C", data = 99},
-	{description = en_zh("Mouse 3","鼠标中键"), data = 1002},
+	{description = STRINGS.KEY_MOUSE3, data = 1002},
 }
 
 local KeysFormat = {
@@ -75,16 +133,16 @@ local KeysFormat = {
 	{description = "1", data = "KEY_1"},
 	{description = "2", data = "KEY_2"},
 	{description = "3", data = "KEY_3"},
-	{description = en_zh("Num 1","小键盘 1"), data = "KEY_KP_1"},
-	{description = en_zh("Num 2","小键盘 2"), data = "KEY_KP_2"},
-	{description = en_zh("Num 3","小键盘 3"), data = "KEY_KP_3"},
+	{description = STRINGS.KEY_NUM1, data = "KEY_KP_1"},
+	{description = STRINGS.KEY_NUM2, data = "KEY_KP_2"},
+	{description = STRINGS.KEY_NUM3, data = "KEY_KP_3"},
 	{description = "Alt", data = "KEY_ALT"},
 	{description = "Ctrl", data = "KEY_CTRL"},
 	{description = "Shift", data = "KEY_SHIFT"},
 	{description = "A", data = "KEY_A"},
 	{description = "B", data = "KEY_B"},
 	{description = "C", data = "KEY_C"},
-	{description = en_zh("Mouse 3","鼠标中键"), data = "MOUSEBUTTON_MIDDLE"},
+	{description = STRINGS.KEY_MOUSE3, data = "MOUSEBUTTON_MIDDLE"},
 }
 
 -- Feature of 0.7: sections.
@@ -227,7 +285,7 @@ local en_configuration_options = {
 	},
 
 	-- Keybind.
-	-- In DST it's fairly common that the player is asked to assign a keyboard button to an feature of the mod.
+	-- In DST it's fairly common that the player is asked to assign a keyboard button to a feature of the mod.
 	-- The number of key options is usually very high, more than 40 or 50.
 	-- Since scrolling through such a big number of options is a huge pain, the mod will instead let the player choose a key directly -- by simply pressing it.
 	--
@@ -285,7 +343,7 @@ local en_configuration_options = {
 		},
 		default = "any text here!",
 		--
-		hover = text_edit_hover, -- explanation here
+		hover = STRINGS.TEXT_EDIT_HOVER, -- explanation here
 		--
 		is_text_config = true, -- this does the magic
 	},
@@ -297,7 +355,7 @@ local en_configuration_options = {
 	-- To make a slider config you have to use the slider_data field. Supply a table of 2 numbers, which will represent the boundaries.
 	-- The user will be able to pick any value between those boundaries.
 	--
-	-- It is required that both boundaries are numbers, and  the left boundary is strictly lesser than the right one.
+	-- It is required that both boundaries are numbers, and the left boundary is strictly lesser than the right one.
 	{
 		name = "CONTINUOUS_SLIDER_EXAMPLE",
 		label = "Continuous Slider Example",
@@ -413,7 +471,6 @@ local en_configuration_options = {
 
 	-- Set.
 	-- Contains multiple elemets (all strings). Useful for selecting prefabs.
-	-- The strings are collected into a table as keys: {string1 = true, string2 = true, ...}
 	{
 		-- Nothing special here
 		name = "SET_EXAMPLE",
@@ -427,7 +484,7 @@ local en_configuration_options = {
 
 		-- With this type of config, the player will be able to make a custom list of strings.
 		-- These strings will be gathered into a table as KEYS: {string1 = true, string2 = true, ...}
-		-- And that will the value returned by GetModConfigData.
+		-- And that will be the value returned by GetModConfigData.
 
 		-- For example, if a player makes a list that goes like:
 			-- true
@@ -443,8 +500,7 @@ local en_configuration_options = {
 	},
 
 	-- Array.
-	-- Kinda similar to the set, except...
-	-- the strings are collected into a table as values: {"string1", "string2", ...}, and they're also ordered,
+	-- Similar to the set, except for the way the strings are collected.
 	{
 		-- Nothing special here
 		name = "ARRAY_EXAMPLE",
@@ -458,7 +514,7 @@ local en_configuration_options = {
 
 		-- With this type of config, the player will be able to make a custom list of strings.
 		-- These strings will be gathered into a table as VALUES not keys: {"string 1", "string 2", and so on}.
-		-- And that will the value returned by GetModConfigData.
+		-- And that will be the value returned by GetModConfigData.
 
 		-- For example, if a player makes a list that goes like:
 			-- true
@@ -489,7 +545,7 @@ local en_configuration_options = {
 
 		-- With this type of config, the player will be able to make a custom list of STRINGS PAIRS.
 		-- These pairs will be gathered into a table as follows: {["key1"] = "value1", ["key2"] = "value2", ...}.
-		-- And that will the value returned by GetModConfigData.
+		-- And that will be the value returned by GetModConfigData.
 
 		-- For example, if a player makes a list that goes like:
 			-- true = 5
@@ -514,6 +570,10 @@ local en_configuration_options = {
 }
 
 filler_counter = 0 -- Reset the counter so the numbering in the Chinese descriptions also starts from 1 (重置计数器使中文说明的计数也从1开始)
+
+
+
+
 
 --------------------------------------------------------- 以下部分为中文说明 ---------------------------------------------------------
 
@@ -716,7 +776,7 @@ zh_configuration_options = {
 		},
 		default = "填写任何文字在这里！",
 		--
-		hover = text_edit_hover, -- 此处为解释
+		hover = STRINGS.TEXT_EDIT_HOVER, -- 此处为解释
 		--
 		is_text_config = true, -- 这就是魔术
 	},
@@ -946,5 +1006,444 @@ zh_configuration_options = {
 	Filler(true),
 }
 
-configuration_options = en_zh(en_configuration_options, zh_configuration_options)
-presets = en_zh(en_presets, zh_presets)
+filler_counter = 0 -- Reset the counter so the numbering in the Russian descriptions also starts from 1 (сбросим счётчик, чтобы пустышки в русском варианте тоже нумеровались с 1)
+
+
+
+
+
+--------------------------------------------------------- Русский вариант ---------------------------------------------------------
+
+-- Ключевое нововведение версии 0.7 - разделы.
+-- Разделы позволяют собрать несколько настроек вместе или разбить их список на смысловые части.
+
+-- Использование:
+-- 1. Начните раздел путём добавления "section_start = true" к определению настройки типа заголовка.
+-- 2. Завершите раздел, добавив "section_end = true" к определению настройки любого типа.
+-- Важно: настройка, на которой завершается раздел, не будет сама входить в этот раздел. 
+-- 2.1. Можно также звершить раздел, просто начав новый - с помощью "section_start = true".
+-- Собственно, это всё. Все настройки, входящие в разделы, будут скрыты, пока пользователь не раскроет нужный раздел. Таким образом обеспечивается аккуратный вид списка настроек.
+
+-- Небольшой пример для ясности:
+--[[
+configuration_options = {
+	{какая-то настройка...},					-- не входит ни в один раздел
+	{какая-то настройка...},					-- не входит ни в один раздел
+	{заголовок, section_start = true}, 			-- НАЧАЛО раздела 1, сам заголовок в раздел не входит, при нажатии открывает раздел 1
+	{какая-то настройка...},					-- входит в раздел 1
+	{какая-то настройка...},					-- входит в раздел 1
+	{заголовок, section_start = true}, 			-- НАЧАЛО раздела 2, сам заголовок в раздел не входит, при нажатии открывает раздел 2
+	{какая-то настройка...},					-- входит в раздел 2
+	{какая-то настройка, section_end = true},	-- КОНЕЦ раздела 2, сама настройка не входит ни в один раздел
+	{какая-то настройка...},					-- не входит ни в один раздел
+	{какая-то настройка, section_end = true},  	-- не входит ни в один раздел, всё ещё
+	{заголовок, section_start = true}, 			-- НАЧАЛО раздела 3, сам заголовок в раздел не входит, при нажатии открывает раздел 3
+	{какая-то настройка...},					-- входит в раздел 3
+	{какая-то настройка...},					-- входит в раздел 3
+}
+--]]
+
+-- Как вариант, можно создать специализированную функцию для добавления разделов:
+local section_counter = 0 -- Счетчик для имен раздела, все настройки должны иметь уникальные внутренние имена, включая заголовки.
+local function AddSection(label, hover)
+	-- Счетчик повышается на 1.
+	section_counter = section_counter + 1
+	-- Функция должна вернуть таблицу с определением настройки вида заголовка.
+	-- Поле options должно быть таблицей с ровно одним вариантом выбора, без него игра не "увидит" заголовок.
+	-- В варианте выбора лучше использовать пустые строки, ничего изобретать не нужно.
+	return {section_start = true, name = "SECTION_"..section_counter, label = label, hover = hover, options = {{description = "", data = ""}}, default = ""}
+end
+
+--[[ Тот же пример без комментариев, для копирования:
+
+local section_counter = 0
+local function AddSection(label, hover)
+	section_counter = section_counter + 1
+	return {section_start = true, name = "SECTION_"..section_counter, label = label, hover = hover, options = {{description = "", data = ""}}, default = ""}
+end
+
+--]]
+
+-- Ключевое нововведение версии 0.8 - быстрые пресеты
+-- Быстрые пресеты предоставляют пользователю готовые конфигурации для модов, которые можно будет применить в 1 клик.
+-- Если у мода опредлены быстрые пресеты, то кнопка возвращения настроек к исходным значениям будет открывать список всех пресетов.
+
+-- Определить пресет вовсе не сложно:
+--
+-- presets = { -- нужно использовать глобальную переменную presets...
+local ru_presets = { -- однако конкретно в этом файле мне нужно привести варианты для нескольких языков, так что сейчас я использую вспомогательную переменную, а в конце файла сделаю выбор на основе языка
+	{ -- начинаем новый пресет
+		name = "Везде* первое", -- название указывается в поле "name"
+		hover = "Назначает настройкам первый вариант, где возможно.", -- краткое описание сути пресета в поле "hover"
+		values = { -- в поле "values" перечислены все настройки, которые пресет изменяет, и значения, которые будут назначены этим настройкам
+			["LIST_EXAMPLE"] = 1, -- ВНУТРЕННЕЕ ИМЯ НАСТРОЙКИ = ЦЕЛЕВОЕ ЗНАЧЕНИЕ
+			["KEYBIND_EXAMPLE"] = 282,
+			["TOGGLE_EXAMPLE_NEW"] = 1, -- очень прошу следить за типами значений (число, строка, таблица...) в пресетах и самих настройках - они должны совпадать!
+		--	["TEXT_EXAMPLE"] = "???", -- для текстового ввода не существует "первого варианта выбора", так что он в пресет не включается
+		--	["RGB_EXAMPLE"] = "{1,1,1,1}" -- то же самое с выбором цвета
+		--	["RGBA_EXAMPLE"] = {1,1,1,1}" -- тоже выбор цвета
+			["MULTIPLE_CHOICES_EXAMPLE"] = {["AAA"] = true}, -- опять следим за типом значения: это настройка типа выбора нескольких вариантов и она ожидает *таблицу*
+		--	["SET_EXAMPLE"] = {}, -- нет "первого варианта"
+		--	["ARRAY_EXAMPLE"] = {}, -- нет "первого варианта"
+		--	["DICTIONARY_EXAMPLE"] = {}, -- нет "первого варианта"
+		--	настройки-пустышки добавляются посредством цикла, см. 20 строк ниже
+		},
+	},
+
+	-- Похожий пример без комментариев:
+	{
+		name = "Везде* второе", 
+		hover = "Назначает настройкам второй вариант, где возможно.",
+		values = {
+			["LIST_EXAMPLE"] = 2,
+			["KEYBIND_EXAMPLE"] = 283,
+			["TOGGLE_EXAMPLE_NEW"] = 0,
+			["MULTIPLE_CHOICES_EXAMPLE"] = {["BBB"] = true},
+		},
+	},
+
+	-- и так далее...
+}
+
+-- Добавление пустышек:
+for i = 1, 5 do -- точно известно, что их 5
+	ru_presets[1].values["FILLER_"..i] = "no"
+	ru_presets[2].values["FILLER_"..i] = "yes"
+end
+
+-- ВАЖНО:
+-- 1. Пресет изменяет только те настройки, которые в нём перечислены. Остальные настройки не будут затронуты.
+-- 2. Снова обращаю внимание на типы значений! Если настройка получит через пресет значение неверного типа (напр. ожидалось число, получена строка), ошибки неизбежны.
+-- 3. Нет необходимости определять пресет для возращения настроек к исходным значениям - он создается автоматически.
+-- 4. Настройки типа выбора цвета всегда возвращают таблицу из четырех чисел: и RGB, и RGBA. В случае RGB непрозрачность (четвертое число) должна равняться 1. 
+-- 5. Если в пресете перечислены несуществующие настройки, ошибок быть не должно.
+
+-- Переходим к различным типам настроек, в том числе новым.
+local ru_configuration_options = {
+	-- Заголовок.
+	-- Заголовки существуют в базовой игре. Чтобы создать заголовок, нужно определить настройку с одним вариантом выбора, у которого description равен пустой строке.
+	{
+		name = "HEADER_EXAMPLE",
+		label = "Заголовок",
+		options = {
+			{description = "", data = 1}, -- значение у единственного варианта выбора должно совпадать с исходным значением
+		},
+		default = 1, -- исходное значение
+	},
+
+	-- Классический список.
+	-- Самый привычный и часто встречаемый тип настроек.
+	{
+		name = "LIST_EXAMPLE",
+		label = "Классический список",
+		options = {
+			{description = "Вариант A",	data =  1, hover = "Пояснение для варианта A!"},
+			{description = "Вариант B",	data =  2, hover = "Пояснение для варианта B!"},
+			{description = "Вариант C",	data =  3, hover = "Пояснение для варианта C!"},
+			{description = "Вариант D",	data =  4, hover = "Пояснение для варианта D!"},
+			{description = "Вариант E",	data =  5, hover = "Пояснение для варианта E!"},
+			{description = "Вариант F",	data =  6, hover = "Пояснение для варианта F!"},
+			{description = "Вариант G",	data =  7, hover = "Пояснение для варианта G!"},
+			{description = "Вариант H",	data =  8, hover = "Пояснение для варианта H!"}, -- ←
+			{description = "Вариант I",	data =  9, hover = "Пояснение для варианта I!"},
+			{description = "Вариант J",	data = 10, hover = "Пояснение для варианта J!"},
+			{description = "Вариант K",	data = 11, hover = "Пояснение для варианта K!"},
+		},
+		default = 8, -- обязательно должен быть вариант выбора с этим значением
+		hover = "Вместо долгого перебора сделайте выбор из списка!",
+	},
+
+	-- Привязка кнопки.
+	-- В игре довольно часто бывает, что игроку нужно назначить кнопку для какого-либо действия из мода.
+	-- Вариантов выбора кнопки может быть очень много; и 40, и 50, и больше.
+	-- Перебирать такое огромное число вариантов - ужасная идея, так что мод предоставляет возможность выбрать кнопку, просто нажав её.
+	--
+	-- Чтобы установить настройке тип привязки кнопки, нужно добавить "is_keybind = true,".
+	-- Пользователь также может убрать привязку, setting the data value to -1. Your mod must be able to handle that case without crashing.
+	{
+		name = "KEYBIND_EXAMPLE",
+		label = "Привязка кнопки",
+		options = Keys, -- хорошей идеей будет сохранить список кнопок в локальную переменную, как в этом файле, в этом случае не придется его копировать каждый раз
+		default = 97,
+		hover = "Выберите кнопку одним нажатем. Просто и быстро.",
+		--
+		is_keybind = true, -- волшебная фраза
+	},
+	-- Существует довольно много модов, которые предпочитают использовать названия кнопок из constants.lua вместо числовых значений.
+	-- Важно: если пользователь уберет привяку, то значение настройки все равно будет -1.
+	--
+	--[[ Можно выбрать любой из двух форматов, но недопустимо использовать сразу оба: будет работать только один.
+	{
+		name = "KEYBIND_EXAMPLE_2",
+		label = "Привязка кнопки 2",
+		options = KeysFormat,
+		default = "KEY_A",
+		hover = "Выберите кнопку одним нажатем. Просто и быстро.",
+		is_keybind = true,
+	},
+	--]]
+
+	-- Переключатель.
+	-- Классический список ровно с двумя вариантами выбора будет оформлен в виде переключаеля.
+	-- По нажатии настройка быстро переключается с одного варианта на другой.
+	{
+		name = "TOGGLE_EXAMPLE_NEW",
+		label = "Переключатель",
+		options = {
+			{description =  "Вкл.", data = 1, hover = "Да!"},
+			{description = "Выкл.", data = 0, hover = "Нет!"},
+		},
+		default = 1,
+		hover = "Быстро переключайтесь между двумя вариантами.",
+	},
+
+	-- Ввод текста.
+	-- Иногда списка с фиксированными вариантами недостаточно. Что если игроку, например, нужно выбрать префаб?
+	-- Все префабы перечислять нецелесообразно: их очень много и с каждым обновлением становится только больше.
+	--
+	-- Чтобы создать настройку со вводом текста, нужно добавить в её определение "is_text_config = true,".
+	-- В поле "hover" следует разъяснить пользователю, какого вида ввод от него ожидается.
+	-- Не помешает и привести образец.
+	{
+		name = "TEXT_EXAMPLE",
+		label = "Текстовый ввод",
+		options = {
+			{description = "Включите мод!", data = "можно вписать любой текст!"},
+		},
+		default = "можно вписать любой текст!",
+		--
+		hover = STRINGS.TEXT_EDIT_HOVER, -- вот здесь указания для игрока
+		--
+		is_text_config = true, -- волшебная фраза
+	},
+
+	-- Ползунки.
+	-- Этот тип настроек предназначен для удобной работы с числовыми данными. 
+	-- В базовой игре пришлось бы писать определение для каждого возможного варианта. От 1 до 100 по строке кода, ура...
+	--
+	-- Ползунки опираются на поле "slider_data". Его значением должна быть таблица из двух чисел, обозначающих допустимые границы значения.
+	-- Пользователь сможет выбрать любое число между установленными границами.
+	--
+	-- Границы должны быть числами, причем первое число должно быть меньше второго.
+	{
+		name = "CONTINUOUS_SLIDER_EXAMPLE",
+		label = "Плавный ползунок", -- "непрерывный"" не совсем корректно, длина шага в этом случае 0.0001
+		options = {
+			{description = "Включите мод!", data = 3.1415}, -- убедитесь, что значение здесь совпадает с исходным
+		},
+		default = 3.1415, -- это исходное значение
+		--
+		hover = "Выберите любое число в заданном интервале!\nМожно вписать точное значение вручную.",
+		--
+		slider_data = {4, 6}, -- 2 числа: левая граница, правая граница
+	},
+
+	-- Интервал можно разделить на определённое количество шагов, там самым получая дискретный ползунок.
+	-- Для этого в таблицу для поля "slider_data" нужно добавить третье число, обозначающее длину шага.
+	-- Максимальное количество отрезков - 500. Если выйдет больше, мод автоматически вернется к плавному ползунку.
+	{
+		name = "DISCRETE_SLIDER_EXAMPLE",
+		label = "Дискретный ползунок",
+		options = {
+			{description = "Включите мод!", data = 5.5}, -- подстроится и станет 5.46
+		},
+		default = 5.5,
+		--
+		hover = "Выберите любое число в заданном интервале!\nВыбранное значение подстраивается под длину шага.",
+		--
+		slider_data = {5, 7, 0.23}, -- 3 числа: левая граница, правая граница, длина шага (прямо как в циклах for)
+	},
+
+	-- Выбор цвета.
+	-- Немного кастомизации не повредит.
+	-- Все цвета перечислить невозможно, так что мод предоставляет специальный инструмент для подбора цвета.
+	-- 
+	-- Цветовая настройка создается путем добавления "is_rgb_config = true," или "is_rgba_config = true,".
+	-- В первом случае игрок сможет изменять цветовые компоненты (красный, зелёный, синий), во втором добавляется возможность изменять уровень прозрачности.
+	-- Итоговым значением настройки в обоих случаях будет таблица из *четырёх* чисел в интервале [0, 1].
+	{
+		name = "RGB_EXAMPLE",
+		label = "Выбор цвета",
+		options = {
+			{description = "Включите мод!", data = {1,1,1,1}}, -- убедитесь, что значение здесь совпадает с исходным
+		},
+		default = {1,1,1,1}, -- хоть прозрачность изменять нельзя, в таблице все равно должно быть *четыре* числа (последнее равно 1)
+		is_rgb_config = true,
+		hover = "Выберите произвольный цвет!",
+	},
+	-- 
+	{
+		name = "RGBA_EXAMPLE",
+		label = "Выбор цвета и прозрачности",
+		options = {
+			{description = "Включите мод!", data = {1,1,1,1}},
+		},
+		default = {1,1,1,1},
+		is_rgba_config = true,
+		hover = "Выберите произвольный цвет и уровень прозрачности!",
+	},
+
+	-- Цвет формата HEX.
+	-- Тот же стандартный выбор цвета с одним отличием: итоговым значением является не таблица из 4 чисел, а строка цвета формата HEX.
+	{
+		name = "HEX_EXAMPLE",
+		label = "Выбор цвета HEX",
+		options = {
+			{description = "Включите мод!", data = "#ffffff"}, -- убедитесь, что значение здесь совпадает с исходным
+		},
+		default = "#ffffff", -- это исходное значение
+		is_hex_config = true,
+		hover = "Выберите произвольный цвет!\nО формате пусть думает автор мода.",
+	},
+
+	-- Выбор нескольких вариантов.
+	-- Этот тип настроек немного сложнее предыдущих (и реализовать его поддержку тоже было немного тяжелее).
+	--
+	-- Для множественного выбора нужно поместить все варианты в поле "choices".
+	-- При этом в поле "options" нужно оставить один вариант, соответствующий исходному значению (без него игра не "увидит" настройку).
+	-- Это также не даст игроку работать со множественным выбором, когда этот мод выключен.
+	{
+		-- Здесь ничего особенного
+		name = "MULTIPLE_CHOICES_EXAMPLE",
+		label = "Выбор нескольских вариантов",
+		hover = "Зачем выбирать что-то одно, когда можно сразу много?",
+		--
+
+		-- В этом поле собраны настоящие варианты выбора.
+		choices = {
+			{description = "Вариант A", data = "AAA", hover = "Пояснение для варианта A!"}, -- ←
+			{description = "Вариант B", data = "BBB", hover = "Пояснение для варианта B!"},
+			{description = "Вариант C", data = "CCC", hover = "Пояснение для варианта C!"}, -- ←
+			{description = "Вариант D", data = "DDD", hover = "Пояснение для варианта D!"},
+			{description = "Вариант E", data = "EEE", hover = "Пояснение для варианта E!"}, -- ←
+			{description = "Вариант F", data = "FFF", hover = "Пояснение для варианта F!"},
+			{description = "Вариант G", data = "GGG", hover = "Пояснение для варианта G!"},
+			{description = "Вариант H", data = "HHH", hover = "Пояснение для варианта H!"},
+			{description = "Вариант I", data = "III", hover = "Пояснение для варианта I!"},
+			{description = "Вариант J", data = "JJJ", hover = "Пояснение для варианта J!"},
+			{description = "Вариант K", data = "KKK", hover = "Пояснение для варианта K!"},
+		},
+		-- Выбранные варианты будут собраны в таблицу.
+		-- Для каждого выбранного варианта в таблице будет пара "ключ-значение", где ключом станет внутреннее значение (поле "data"), а значением - логическая истина (true).
+		--
+		-- Например, если игрок выберет "Вариант D" и "Вариант I" из списка выше, итоговая таблица будет выглядеть так:
+		-- {["DDD"] = true, ["III"] = true}
+		-- Такая таблица и будет возвращена функцией GetModConfigData.
+
+
+		-- В поле "options" нужно поместить ровно один вариант, в котором игроку будет сказано включить этот мод.
+		options = {
+			{description = "Включите мод!", data = {["AAA"] = true,["CCC"] = true,["EEE"] = true,}}, -- убедитесь, что значение здесь совпадает с исходным
+		},
+		default = {["AAA"] = true,["CCC"] = true,["EEE"] = true,}, -- а ещё убедитесь, что здесь у каждого ключа есть соответствующий вариант в поле "choices"
+	},
+
+	-- Множество.
+	-- Позволяет указать несколько строк. Полезно, например, при выборе префабов.
+	{
+		-- Здесь ничего особенного
+		name = "SET_EXAMPLE",
+		label = "Множество",
+		hover = "Создайте своё множество!\nДля инструкций выделено целых 9 строк!\n3\n4\n5\n6\n7\n8\n!! 9 !!",
+		--
+
+		-- Для создания множества необходимо добавить следующую фразу:
+		is_set_config = true,
+
+		-- Настройка типа множества не предоставляет вариантов выбора. Игрок может ввести любое количество произвольных строк.
+		-- Все введённые строки собираются в таблицу как ключи: {строка1 = true, строка2 = true, ...}
+		-- Эта таблица и будет возвращена функцией GetModConfigData.
+
+		-- Например, пусть ввод игрока имеет вид:
+			-- true
+			-- {}
+			-- 3
+		-- В этом случае итоговая таблица будет такой: {["true"] = true, ["{}"] = true, ["3"] = true} -- важно отметить, что все ключи строковые, хоть и похожи на другие типы
+
+		-- В поле "options" нужно поместить ровно один вариант, в котором игроку будет сказано включить этот мод.
+		options = {
+			{description = "Включите мод!", data = {["факел"] = true, ["топор"] = true, ["рюкзак"] = true}}, -- убедитесь, что значение здесь совпадает с исходным
+		},
+		default = {["факел"] = true, ["топор"] = true, ["рюкзак"] = true}, -- это исходное значение
+	},
+
+	-- Массив.
+	-- Массивы схожи со множествами, но их данные собираются в таблицу совершенно другим образом.
+	{
+		-- Здесь ничего особенного
+		name = "ARRAY_EXAMPLE",
+		label = "Массив",
+		hover = "Создайте свой массив!\nДля инструкций выделено целых 9 строк!\n3\n4\n5\n6\n7\n8\n!! 9 !!",
+		--
+
+		-- Для создания массива необходимо добавить следующую фразу:
+		is_array_config = true,
+
+		-- Настройка типа массива тоже не предоставляет вариантов выбора. Игрок может ввести любое количество произвольных строк.
+		-- Все введённые строки будут собраны в таблицу как значения (а не ключи, как в случае множества): {"строка1", "строка2", ...}.
+		-- Эта таблица и будет возвращена функцией GetModConfigData.
+
+		-- Например, пусть ввод игрока имеет вид:
+			-- true
+			-- {}
+			-- 3
+		-- В этом случае итоговая таблица будет такой: {"true", "{}", "3"} -- важно отметить, что все значения строковые, хоть и похожи на другие типы
+
+		-- В поле "options" нужно поместить ровно один вариант, в котором игроку будет сказано включить этот мод.
+		options = {
+			{description = "Включите мод!", data = {"факел", "топор", "рюкзак"}}, -- убедитесь, что значение здесь совпадает с исходным, порядок имеет значение
+		},
+		default = {"факел", "топор", "рюкзак"}, -- это исходное значение
+	},
+
+	-- Словарь.
+	-- Комбинация множества и массива.
+	{
+		-- Nothing special here
+		name = "DICTIONARY_EXAMPLE",
+		label = "Словарь",
+		hover = "Создайте свой словарь!\nДля инструкций выделено целых 9 строк!\n3\n4\n5\n6\n7\n8\n!! 9 !!",
+		--
+
+		-- Для создания словаря необходимо добавить следующую фразу:
+		is_dictionary_config = true,
+
+		-- Словарь позволяет игроку указывать как ключи, так и значения.
+		-- Пары "ключ-значение" будут собраны в таблицу следующим образом: {["ключ1"] = "значение1", ["ключ2"] = "значение2", ...}.
+		-- And that will be the value returned by GetModConfigData.
+
+		-- Например, пусть ввод игрока имеет вид:
+			-- true = 5
+			-- {} = {}
+			-- 3 = 6
+		-- В этом случае итоговая таблица будет такой: {["true"] = "5", ["{}"] = "{}", ["3"] = "6"} -- в очередной раз обращаю внимание, что все ключи и все значения строковые
+
+		-- В поле "options" нужно поместить ровно один вариант, в котором игроку будет сказано включить этот мод.
+		options = {
+			{description = "Включите мод!", data = {["1"] = "факел", ["топор"] = "3", ["рюкзак"] = "2"}}, -- убедитесь, что значение здесь совпадает с исходным
+		},
+		default = {["1"] = "факел", ["топор"] = "3", ["рюкзак"] = "2"}, -- это исходное значение
+	},
+
+	-- Небольшой образец раздела:
+	AddSection("Заголовок раздела", "Пачка настроек, которые ни на что не влияют!"),
+	Filler(), -- эти *четыре* пустышки
+	Filler(), -- будут скрыты
+	Filler(), -- пока игрок
+	Filler(), -- не нажмет на заголовок раздела
+	Filler(true),
+}
+
+local configuration_options_choice = {
+	en = en_configuration_options,
+	zh = zh_configuration_options,
+	ru = ru_configuration_options,
+}
+configuration_options = configuration_options_choice[locale]
+
+local presets_choice = {
+	en = en_presets,
+	zh = zh_presets,
+	ru = ru_presets,
+}
+presets = presets_choice[locale]

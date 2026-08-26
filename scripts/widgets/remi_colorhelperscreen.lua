@@ -3,7 +3,57 @@ local Widget = require "widgets/widget"
 local Screen = require "widgets/screen"
 local Text = require "widgets/text"
 local Image = require "widgets/image"
+local UIAnim = require "widgets/uianim"
 local TextEdit = require "widgets/textedit"
+
+local SILLY_VISUAL_CHOICES = {
+	{
+		bank = "pigman",
+		build = "pig_build",
+		scale = .15,
+		offset = Vector3(0, -25, 0),
+		facing = FACING_DOWN,
+		anims = {"idle_creepy", "idle_happy", "idle_loop", "idle_scared", "walk_loop"},
+		hidelayers = {"hat", "ARM_carry_up"},
+		hidesymbols = {},
+	},
+
+	{
+		bank = "manrabbit",
+		build = "manrabbit_build",
+		scale = .15,
+		offset = Vector3(0, -30, 0),
+		facing = FACING_DOWN,
+		anims = {"alert_loop", "sleep_loop"},
+		hidelayers = {"hat", "ARM_carry", "HAIR_HAT"},
+		hidesymbols = {},
+	},
+
+	{
+		bank = "mandrake",
+		build = "mandrake",
+		scale = .18,
+		offset = Vector3(0, -25, 0),
+		facing = FACING_DOWN,
+		anims = {"idle_loop"},
+		hidelayers = {},
+		hidesymbols = {},
+	},
+}
+
+local function ApplySillyVisual(widget)
+	local data = SILLY_VISUAL_CHOICES[math.random(1, #SILLY_VISUAL_CHOICES)]
+	local anim = data.anims[math.random(1, #data.anims)]
+	local animstate = widget:GetAnimState()
+	animstate:SetBank(data.bank)
+	animstate:SetBuild(data.build)
+	widget:SetScale(data.scale)
+	widget:SetPosition(widget.pos_x + data.offset.x, widget.pos_y + data.offset.y)
+	widget:SetFacing(data.facing)
+	animstate:PlayAnimation(anim, true)
+	for _, layer in pairs(data.hidelayers) do animstate:Hide(layer) end
+	for _, symbol in pairs(data.hidesymbols) do animstate:HideSymbol(symbol) end
+end
 
 local function rgb_to_hex(color) -- uses range 0 to 1
 	local colorstr = "#"
@@ -46,8 +96,19 @@ local RemiColorHelperScreen = Class(Screen, function(self, title, hover, buttons
 	else
 		self.current_color = shallowcopy(self.current_color)
 	end
+	-- let's make sure the color table is correct
 	self.current_color = type(self.current_color) == "table" and self.current_color or {1,1,1,1}
-	for i = 1,4 do self.current_color[i] = self.current_color[i] or 1 end
+	for i = 1,4 do 
+		local v = self.current_color[i]
+		if not (type(v) == "number" and v >= 0 and v <= 1) then self.current_color[i] = 1 end
+	end
+	if not include_alpha then self.current_color[4] = 1 end
+
+	local new_silly_visual = self.proot:AddChild(UIAnim())
+	new_silly_visual.pos_x, new_silly_visual.pos_y = 100, 140
+	new_silly_visual:SetPosition(new_silly_visual.pos_x, new_silly_visual.pos_y)
+	ApplySillyVisual(new_silly_visual)
+	self.new_silly_visual = new_silly_visual
 
 	local newcolor = self.proot:AddChild(Image("images/global.xml", "square.tex"))
 	newcolor:SetPosition(100,140)
@@ -56,6 +117,13 @@ local RemiColorHelperScreen = Class(Screen, function(self, title, hover, buttons
 	self.newcolor = newcolor
 	self.newcolor_lbl = self.proot:AddChild(Text(CHATFONT, 25, STRINGS.BUTTONPICKER.NEWCOLOR_LBL_STRING))
 	self.newcolor_lbl:SetPosition(100,210)
+
+	local old_silly_visual = self.proot:AddChild(UIAnim())
+	old_silly_visual.pos_x, old_silly_visual.pos_y = -100, 140
+	old_silly_visual:SetPosition(old_silly_visual.pos_x, old_silly_visual.pos_y)
+	ApplySillyVisual(old_silly_visual)
+	self.old_silly_visual = old_silly_visual
+
 	local oldcolor = self.proot:AddChild(Image("images/global.xml", "square.tex"))
 	oldcolor:SetPosition(-100,140)
 	oldcolor:ScaleToSize(200,100)
@@ -75,9 +143,9 @@ local RemiColorHelperScreen = Class(Screen, function(self, title, hover, buttons
 		local color_limit = i == 4 and 100 or 255
 
 		local label = self.proot:AddChild(Text(CHATFONT, 25, STRINGS.BUTTONPICKER.COLOR_NAMES[i]))
-		label:SetRegionSize(100,40)
+		label:SetRegionSize(120,40)
 		label:SetHAlign(1)
-		label:SetPosition(-150, -50*(i-1))
+		label:SetPosition(-140, -50*(i-1))
 		self.colorlabels[i] = label
 
 		local colorpicker_bg = self.proot:AddChild(Image())
@@ -187,6 +255,13 @@ end)
 
 function RemiColorHelperScreen:UpdateColorPreview()
 	self.newcolor:SetTint(unpack(self.current_color))
+
+	if self.current_color[4] == 1 then
+		self.new_silly_visual:Hide()
+	elseif not self.new_silly_visual:IsVisible() then
+		self.new_silly_visual:Show()
+		ApplySillyVisual(self.new_silly_visual)
+	end
 end
 
 function RemiColorHelperScreen:UpdateHexField()

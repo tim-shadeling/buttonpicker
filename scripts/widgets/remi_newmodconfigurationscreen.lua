@@ -24,10 +24,31 @@ local function checkdesc(desc)
 	return (type(desc) == "string" or type(desc) == "number") and tostring(desc) or "!!! WRONG DESC !!!"
 end
 
-local VALID_FONTS = {["opensans"] = true, ["bp100"] = true, ["bp50"] = true, ["buttonfont"] = true, ["spirequal"] = true, ["spirequal_small"] = true, ["spirequal_outline"] = true, ["spirequal_outline_small"] = true, ["stint-ucr"] = true, ["talkingfont"] = true, ["talkingfont_wormwood"] = true, ["talkingfont_tradein"] = true, ["talkingfont_hermit"] = true, ["bellefair"] = true, ["hammerhead"] = true, ["bellefair_outline"] = true, ["stint-small"] = true, ["ptmono"] = true}
+-- Font Configs
+local VALID_FONTS = {
+	["opensans"] = true, 
+	["bp100"] = true, 
+	["bp50"] = true, 
+	["buttonfont"] = true, 
+	["spirequal"] = true, 
+	["spirequal_small"] = true, 
+	["spirequal_outline"] = true, 
+	["spirequal_outline_small"] = true, 
+	["stint-ucr"] = true, 
+	["talkingfont"] = true, 
+	["talkingfont_wormwood"] = true, 
+	["talkingfont_tradein"] = true, 
+	["talkingfont_hermit"] = true, 
+	["bellefair"] = true, 
+	["hammerhead"] = true, 
+	["bellefair_outline"] = true, 
+	["stint-small"] = true, 
+	["ptmono"] = true
+}
 local function fontexists(font)
 	if font ~= nil and VALID_FONTS[font] then return font end
 end
+--
 
 local function custom_not_equal(a,b)
 	if type(a) ~= type(b) then return true end

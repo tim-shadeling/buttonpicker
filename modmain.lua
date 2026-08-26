@@ -1,3 +1,20 @@
+-- EN -- line 26
+-- ZH -- line 78
+-- RU -- line 115
+
+Assets = -- load a few assets for the color picker screen
+{
+	Asset("ANIM", "anim/ds_pig_basic.zip"),
+	Asset("ANIM", "anim/ds_pig_actions.zip"),
+	Asset("ANIM", "anim/pig_build.zip"),
+
+	Asset("ANIM", "anim/manrabbit_basic.zip"),
+	Asset("ANIM", "anim/manrabbit_actions.zip"),
+	Asset("ANIM", "anim/manrabbit_build.zip"),
+
+	Asset("ANIM", "anim/mandrake.zip"),
+}
+
 _G = GLOBAL
 require = _G.require
 -- Strings:
@@ -21,6 +38,7 @@ _G.REMI_RECONFIGURABLE_MODS = {}
 
 local function Reconfigure(settigs)
 	-- a function that does the whole job of applying the config changes
+	-- the function is supposed to read the new config data and apply it immediately
 	-- look up examples in my other mods: Vault Navigator, Bestest Spell Casting, Auto-Refuel Stuff, Brightshade Timer & Warning, and more
 end
 
@@ -53,9 +71,13 @@ _G.AddUserCommand("recfg", {
 	end,
 })
 
--------------------------------------------------------
--- NEW, machine-translated/以下部分为新增内容，由机器翻译。--
--------------------------------------------------------
+
+
+
+
+--------------------------------------------------------- 以下部分为中文说明 ---------------------------------------------------------
+-- machine-translated/由机器翻译。--
+
 -- 0.9 版本新增功能：重新配置中心
 -- 从 Vault Navigator 开始，我一直在探索如何在不重新加入服务器或重启游戏的情况下，随时更改 MOD 的配置。
 -- 我已经为许多 MOD 添加了此功能：每个 MOD 都有一个斜杠命令，用于打开 MOD 配置界面。所做的任何更改都会立即生效。
@@ -63,7 +85,7 @@ _G.AddUserCommand("recfg", {
 -- 工作原理：
 
 -- 1. 我将创建一个表格来收集信息：
-_G.REMI_RECONFIGURABLE_MODS = {}
+-- _G.REMI_RECONFIGURABLE_MODS = {}
 
 -- 2. 其他 MOD 将使用其内部 MOD 名称作为键，将其“重新配置”功能添加到该表格中。
 -- 以下是一个 MOD 如何实现此功能的示例：
@@ -85,3 +107,42 @@ end)
 -- 重配置中心列出了所有已将其功能添加到 `REMI_RECONFIGURABLE_MODS` 的模块。
 -- 点击模块条目将打开其配置界面，用户可以在此进行必要的更改。
 -- 点击“应用”按钮后，配置更改将(应该)立即生效。
+
+
+
+
+
+--------------------------------------------------------- Русский вариант ---------------------------------------------------------
+
+-- Ключевое нововведение в версии 0.9 - Reconfiguration Hub
+-- Начиная с мода "Vault Navigator", я исследовал возможность изменять настройки мода посреди игры, без необходимсти в перезапуске.
+-- Я добавил эту функцию нескольким модам: у каждого была своя слеш-команда, открывающая экран настроек для того или иного мода. Любые изменения применялись сразу же.
+-- Со временем слеш-команд стало слишко много, и запомнить их всех стало попросту невозможно. Я решил эту проблему с помощью объединенного интерфейса.
+
+-- Как это работает: 
+-- 1. Я создам таблицу для сбора данных:
+-- _G.REMI_RECONFIGURABLE_MODS = {}
+
+-- 2. Другие моды добавляют ссылку на свою функцию перенастройки в таблицу выше, в качестве ключа используется внутренее имя мода.
+-- Небольшой пример:
+--[[
+
+local function Reconfigure(settigs)
+	-- эта функция вызывается когда игрок нажимает кнопку "Применить" на экране настроек
+	-- цель функции: прочитать новые настройки и сразу их применить
+	-- образцы можно найти в моих других модах: Vault Navigator, Bestest Spell Casting, Auto-Refuel Stuff, Brightshade Timer & Warning...
+end
+
+AddGamePostInit(function() -- совершенно необходимо использовать AddGamePostInit, чтобы гарантировать, что все моды успели загрузиться
+	local mods = GLOBAL.rawget(GLOBAL, "REMI_RECONFIGURABLE_MODS") -- rawget позволяет избежать сбоя, если таблица REMI_RECONFIGURABLE_MODS не существовала по какой-либо причине
+	if mods then mods[modname] = Reconfigure end -- в качестве ключа используется переменная modname (встроенная), в качестве значения - функция перенастройки (в данном случае она называется Reconfigure)
+end)
+
+--]]
+
+-- 3. Уже в игре, пользователь сможет просмотреть список всех модов с мгновенной перенастройкой с помощью /recfg (или /cfg).
+-- В список включаются все моды, которые предоставили таблице REMI_RECONFIGURABLE_MODS свои функции перенастройки.
+-- Пользовать сможет выбрать любой мод, и откроется экран настроек для выбранного мода, где игрок сможет сделать все необходимые изменения.
+-- По нажатии кнопки "Применить" все изменения в настройках должны мгновенно принять силу.
+
+-- Сама слеш-команда /recfg определена в английской версии инструкции (строка 45).
