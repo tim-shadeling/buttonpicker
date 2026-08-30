@@ -72,12 +72,12 @@ This feature originates from clearlove's Mod Config By Text.]],
 		NO = "Нет",
 	},
 }
-local STRINGS = strings[locale]
+local STRINGS = strings[lang]
 
 name = STRINGS.MODNAME
 description = STRINGS.MODDESC
 author = "Remi, Chinese translation by 冰冰羊"
-version = "1.2"
+version = "1.2a"
 
 forumthread = ""
 
@@ -1439,11 +1439,11 @@ local configuration_options_choice = {
 	zh = zh_configuration_options,
 	ru = ru_configuration_options,
 }
-configuration_options = configuration_options_choice[locale]
+configuration_options = configuration_options_choice[lang]
 
 local presets_choice = {
 	en = en_presets,
 	zh = zh_presets,
 	ru = ru_presets,
 }
-presets = presets_choice[locale]
+presets = presets_choice[lang]
